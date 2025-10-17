@@ -1,0 +1,73 @@
+/* === Import Google Fonts FIRST === */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Annie+Use+Your+Telescope&display=swap');
+
+/* === Then import Tailwind === */
+@import "tailwindcss";
+
+/* === Root Colors === */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* === Theme Variables === */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Font Families */
+  --font-fredoka: 'Fredoka', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+  --font-nunito: 'Nunito', sans-serif;
+  --font-annie: 'Annie Use Your Telescope', cursive;
+
+  /* Default Tailwind Bindings */
+  --font-sans: var(--font-fredoka);
+  --font-mono: var(--font-fredoka);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* === Smooth Scroll === */
+html {
+  scroll-behavior: smooth;
+}
+
+/* === Base Body === */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-fredoka);
+  cursor: url("/cursors/wand-rotated.png") 5 0, auto !important;
+}
+
+/* === Global Wand Cursor === */
+*,
+*::before,
+*::after {
+  cursor: url("/cursors/wand-rotated.png") 5 0, auto !important;
+}
+
+/* === Hover Glow Effect === */
+a:hover,
+button:hover,
+[role="button"]:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8))
+          drop-shadow(0 0 16px rgba(255, 215, 0, 0.6))
+          brightness(1.2);
+  transition: filter 0.3s ease;
+}
+
+/* === Disable Glow for Profile Dropdown === */
+.profile-dropdown a:hover,
+.profile-dropdown button:hover {
+  filter: none !important;
+  transition: none !important;
+}
