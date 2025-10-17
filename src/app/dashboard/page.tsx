@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { Trash2 } from "lucide-react";
 import Footer from "../components/Footer";
 import NavbarRightDashboard from "../components/NavbarRightDashboard";
 
@@ -28,7 +29,6 @@ export default function Dashboard() {
   const { isAuthenticated, userId, isLoading, accessToken } = useAuth();
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) {
@@ -36,35 +36,66 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch(`/api/user-profile/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        setUserProfile({
+          nickname: data.profile.nickname,
+          stories: data.stories || [],
+        });
+      } else {
+        setError(data.detail || "Failed to fetch profile");
+      }
+    } catch (err) {
+      setError("An error occurred while fetching the profile");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated || !userId || !accessToken) return;
-
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch(`/api/user-profile/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // 👈 Add token
-          },
-        });
-        const data = await res.json();
-        if (res.ok && data.status === "success") {
-          setUserProfile({
-            nickname: data.profile.nickname,
-            stories: data.stories || [],
-          });
-        } else {
-          setError(data.detail || "Failed to fetch profile");
-        }
-      } catch (err) {
-        setError("An error occurred while fetching the profile");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProfile();
   }, [isAuthenticated, userId, accessToken]);
+
+  const handleDeleteStory = async (storyTitle: string, storyType: string) => {
+    if (!userId || !storyType) {
+      setError("Missing user ID or story type");
+      return;
+    }
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(
+        `${backendUrl}/users/${userId}/stories/${encodeURIComponent(storyTitle || "")}?story_type=${encodeURIComponent(storyType)}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok && data.status === "success") {
+        await fetchProfile(); // Refresh user profile to update UI
+      } else {
+        setError(data.message || "Failed to delete story");
+      }
+    } catch (err) {
+      setError("An error occurred while deleting the story");
+      console.error(err);
+    }
+  };
+
   const nextSlide = () => {
     if (!userProfile) return;
     setCarouselIndex(
@@ -86,12 +117,28 @@ export default function Dashboard() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Checking authentication...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Checking authentication...
+      </div>
+    );
   }
 
   return (
     <main className="min-h-screen flex flex-col">
       <NavbarRightDashboard />
+
+      {error && (
+        <div className="fixed top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-xl shadow-2xl z-50 max-w-md animate-slide-in">
+          {error}
+          <button
+            className="ml-4 text-white underline font-medium"
+            onClick={() => setError(null)}
+          >
+            Close
+          </button>
+        </div>
+      )}
 
       <motion.h1
         initial={{ opacity: 0, y: 40 }}
@@ -106,22 +153,43 @@ export default function Dashboard() {
       <div className="flex-1 max-w-6xl mx-auto px-8 py-16">
         {loading ? (
           <p className="text-xl text-center text-gray-600">Loading...</p>
-        ) : error ? (
-          <p className="text-center text-red-500 mt-8">{error}</p>
         ) : userProfile?.stories.length ? (
-
-
           <div className="relative">
             <div className="flex space-x-6 overflow-hidden">
               {getCurrentSlideStories().map((story) => (
-                <div
+                <motion.div
                   key={story.story_id}
-                  className="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg p-6 flex flex-col justify-between min-w-[300px] border border-gray-200 hover:shadow-xl hover:scale-105 transition-all duration-300"
                 >
-                  <h3 className="text-xl font-bold mb-2">{story.title}</h3>
-                  <p>Word Count: {story.word_count}</p>
-                  <p>Type: {story.story_type}</p>
-                  <p>Latest Chapter: {story.latest_chapter_id}</p>
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-xl font-bold text-gray-800 mb-3">
+                      {story.title || "Untitled Story"}
+                    </h3>
+                    <button
+                      onClick={() => handleDeleteStory(story.title, story.story_type)}
+                      className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                      title="Delete Story"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  <div className="space-y-2 text-gray-600">
+                    <p className="flex justify-between">
+                      <span className="font-medium">Word Count:</span>
+                      <span>{story.word_count.toLocaleString()}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="font-medium">Type:</span>
+                      <span>{story.story_type}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="font-medium">Latest Chapter:</span>
+                      <span>{story.latest_chapter_id}</span>
+                    </p>
+                  </div>
                   <button
                     onClick={async () => {
                       if (!userId || !story.story_id || !story.story_type) {
@@ -130,11 +198,6 @@ export default function Dashboard() {
                       }
 
                       try {
-                        console.log("Request body:", {
-                          user_id: userId,
-                          story_id: story.story_id,
-                          story_type: story.story_type,
-                        });
                         const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
                         const response = await fetch(`${backendUrl}/stories/${story.story_id}`, {
                           method: "PUT",
@@ -160,32 +223,31 @@ export default function Dashboard() {
                           return;
                         }
 
-                        // Navigate to the story generation page with query parameters
                         router.push(`/generation-app?story_id=${story.story_id}&story_type=${story.story_type}`);
                       } catch (err) {
                         console.error("Error continuing story:", err);
                         alert("Something went wrong while continuing your story.");
                       }
                     }}
-                    className="mt-4 px-4 py-2 rounded-md bg-[#00BFA6] text-white hover:bg-[#00997f] transition"
+                    className="mt-4 px-4 py-2 rounded-md bg-gradient-to-r from-[#00BFA6] to-[#00997f] text-white font-medium hover:shadow-md transition-all"
                   >
                     Continue Story
                   </button>
-                </div>
+                </motion.div>
               ))}
             </div>
 
             {userProfile.stories.length > 3 && (
-              <div className="flex justify-between mt-4">
+              <div className="flex justify-between mt-6">
                 <button
                   onClick={prevSlide}
-                  className="px-4 py-2 bg-[#00BFA6] text-white rounded-lg hover:bg-[#00997f] transition"
+                  className="px-6 py-2 bg-gradient-to-r from-[#00BFA6] to-[#00997f] text-white rounded-lg font-medium hover:shadow-md transition-all"
                 >
                   Prev
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="px-4 py-2 bg-[#00BFA6] text-white rounded-lg hover:bg-[#00997f] transition"
+                  className="px-6 py-2 bg-gradient-to-r from-[#00BFA6] to-[#00997f] text-white rounded-lg font-medium hover:shadow-md transition-all"
                 >
                   Next
                 </button>
@@ -203,4 +265,3 @@ export default function Dashboard() {
     </main>
   );
 }
-

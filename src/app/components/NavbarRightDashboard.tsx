@@ -11,13 +11,40 @@ export default function NavbarRightDashboard() {
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, accessToken } = useAuth();
   const router = useRouter();
   let rippleCounter = 0;
-
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      // Get the user ID from Supabase
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("Failed to get user ID: " + (userError?.message || "No user found"));
+      }
+      const userId = user.id;
+
+      // Make the FastAPI backend logout call
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://whimsera.com";
+      const response = await fetch(`${backendUrl}/users/${userId}/session`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Backend logout failed: ${errorData.detail || response.statusText}`);
+      }
+
+      // Proceed with Supabase logout
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        throw new Error("Supabase logout failed: " + signOutError.message);
+      }
+
+      // Redirect to login page
       router.push("/login");
     } catch (err) {
       console.error("Logout failed:", err);
