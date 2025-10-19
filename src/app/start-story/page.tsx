@@ -6,7 +6,14 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Footer from "../components/Footer";
+interface UserProfile {
+  nickname: string;
+  tier: number;
+  no_genre: string[]; 
+  no_themes: string[]; 
+  age: number;
 
+}
 const genreColors: Record<string, string> = {
     Fantasy: "#6C5CE7",
     Mystery: "#00BFA6",
@@ -86,7 +93,7 @@ export default function StartStory() {
     const [mounted, setMounted] = useState<boolean>(false);
 
     // --- User Profile States ---
-    const [userProfile, setUserProfile] = useState<any>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [availableGenres, setAvailableGenres] = useState<string[]>(ALL_GENRES);
     const [availableThemes, setAvailableThemes] = useState<string[]>(ALL_THEMES);
     const [availableModels, setAvailableModels] = useState<{ [key: string]: string }>({});

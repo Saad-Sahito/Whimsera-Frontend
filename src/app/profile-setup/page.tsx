@@ -251,7 +251,7 @@ export default function ProfileSetup() {
                       : "bg-white/20 text-white hover:bg-white/30"
                   }`}
                 >
-                  👨‍👩‍👧‍👦 Yes, I'm a parent
+                  👨‍👩‍👧‍👦 Yes, I&apos;m a parent
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -266,7 +266,7 @@ export default function ProfileSetup() {
                       : "bg-white/20 text-white hover:bg-white/30"
                   }`}
                 >
-                  ✨ No, it's for me
+                  ✨ No, it&apos;s for me
                 </motion.button>
               </div>
               <motion.button
