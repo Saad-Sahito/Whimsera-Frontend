@@ -1,12 +1,11 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { uniqueUserTag, nickname, age } = body;
+  const { nickname, age } = body;
 
-  if (!uniqueUserTag || !nickname) {
+  if (!nickname) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
@@ -59,25 +58,24 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    // Check if tag exists
-    const { count: tagCount, error: tagCheckError } = await supabaseAdmin
+    // Check if profile already exists for this user
+    const { count: profileCount, error: profileCheckError } = await supabaseAdmin
       .from("profiles")
       .select("*", { count: "exact", head: true })
-      .eq("unique_user_tag", uniqueUserTag);
+      .eq("id", user.id);
 
-    if (tagCheckError) {
-      console.error("Tag check error:", tagCheckError);
-      return NextResponse.json({ error: "Error checking tag" }, { status: 500 });
+    if (profileCheckError) {
+      console.error("Profile check error:", profileCheckError);
+      return NextResponse.json({ error: "Error checking profile" }, { status: 500 });
     }
 
-    if (tagCount && tagCount > 0) {
-      return NextResponse.json({ error: "user_tag_taken" }, { status: 409 });
+    if (profileCount && profileCount > 0) {
+      return NextResponse.json({ error: "profile_already_exists" }, { status: 409 });
     }
 
     // Insert profile row
     const { error: profileError } = await supabaseAdmin.from("profiles").insert({
       id: user.id,
-      unique_user_tag: uniqueUserTag,
       nickname,
       age: age ?? null,
     });
@@ -86,7 +84,7 @@ export async function POST(req: NextRequest) {
       console.error("Profile insert failed:", profileError);
       const isDup = profileError.message?.includes("duplicate key") || profileError.code === "23505";
       return NextResponse.json(
-        { error: isDup ? "user_tag_taken_race" : "profile_insert_failed" },
+        { error: isDup ? "profile_already_exists" : "profile_insert_failed" },
         { status: isDup ? 409 : 500 }
       );
     }

@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SlideInSection from "../components/SlideInSection";
+
 export default function About() {
   const Section = ({
     direction = "up",
@@ -19,14 +21,15 @@ export default function About() {
     <SlideInSection direction={direction}>
       <section className="text-center max-w-4xl mx-auto space-y-8">
         <div className="flex flex-col items-center justify-center gap-4">
-          {/* Icon centered above header */}
-          <Image
-            src={icon}
-            alt=""
-            fill
-            sizes="56px"
-            className="object-contain"
-          />
+          <div className="relative w-16 h-16">
+            <Image
+              src={icon}
+              alt={`${title} icon`}
+              width={64}
+              height={64}
+              className="object-contain"
+            />
+          </div>
           <h2 className="text-[40px] font-bold font-fredoka text-slateblue">
             {title}
           </h2>
@@ -47,13 +50,15 @@ export default function About() {
         <SlideInSection direction="up">
           <div className="text-center max-w-4xl mx-auto space-y-10">
             <div className="flex flex-col items-center justify-center gap-4">
-              <Image
-                src="/book.png"
-                alt="About icon"
-                fill
-                sizes="56px"
-                className="object-contain"
-              />
+              <div className="relative w-16 h-16">
+                <Image
+                  src="/book.png"
+                  alt="About icon"
+                  width={64}
+                  height={64}
+                  className="object-contain"
+                />
+              </div>
               <h1 className="text-[40px] font-bold font-fredoka text-slateblue">
                 About
               </h1>
@@ -74,7 +79,14 @@ export default function About() {
         >
           Using the latest in AI technology, Whimsera acts like a digital
           storyteller — taking your ideas and weaving them into unique
-          adventures every time.
+          adventures every time. Our creative models are powered by third-party
+          LLMs providers, including OpenAI, Anthropic, Meta, and Google.{" "}
+          <Link
+            href="/ai-docs"
+            className="text-[36px] font-light font-nunito text-[#6C5CE7] hover:underline"
+          >
+            Read details
+          </Link>
         </Section>
 
         {/* Who It’s For */}

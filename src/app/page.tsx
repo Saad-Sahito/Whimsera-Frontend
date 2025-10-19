@@ -10,7 +10,7 @@ import SlideInSection from "./components/SlideInSection";
 
 export default function Home() {
   return (
-    <main className="pt-26 min-h-screen text-[#2D3436] overflow-x-hidden">
+    <main className="pt-21 min-h-screen text-[#2D3436] overflow-x-hidden">
       <Navbar />
 
       <SlideInSection direction="up">
