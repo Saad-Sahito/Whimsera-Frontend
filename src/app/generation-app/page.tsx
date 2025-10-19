@@ -34,32 +34,41 @@ interface StoryMetadata {
 // --- COMPONENTS ---
 
 // Navbar Component
+// Navbar Component
 function Navbar({ isDark }: { isDark: boolean }) {
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 shadow-md transition-colors duration-300 ${
-        isDark
+      className={`fixed top-0 left-0 right-0 z-40 shadow-md transition-colors duration-300 ${isDark
           ? "bg-gray-800/80 border-b border-gray-700 backdrop-blur-sm"
           : "bg-white/80 border-b border-gray-200 backdrop-blur-sm"
-      }`}
+        }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <a
             href="/dashboard"
-            className={`text-xl font-bold ${
-              isDark ? "text-gray-100" : "text-gray-800"
-            } hover:text-indigo-500 transition-colors`}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${isDark
+                ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                : "bg-indigo-500 hover:bg-indigo-600 text-white"
+              }`}
+          >
+            Back to Dashboard
+          </a>
+
+          <h1
+            className={`absolute left-1/2 transform -translate-x-1/2 text-lg sm:text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-800"
+              }`}
             style={{ fontFamily: "'Annie Use Your Telescope', cursive" }}
           >
-            Whimsera Story Engine
-          </a>
+            Whimsera Story Theatre
+          </h1>
+
+          <div className="w-40"></div>
         </div>
       </div>
     </header>
   );
 }
-
 // Streaming text component with gradient effect and completion callback
 function StreamingText({
   text,
@@ -157,19 +166,16 @@ function LoadingSkeleton({ isDark }: { isDark: boolean }) {
       {[...Array(3)].map((_, i) => (
         <div key={i} className="space-y-3">
           <div
-            className={`h-4 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} ${
-              widths[i][0]
-            }`}
+            className={`h-4 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} ${widths[i][0]
+              }`}
           />
           <div
-            className={`h-4 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} ${
-              widths[i][1]
-            }`}
+            className={`h-4 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} ${widths[i][1]
+              }`}
           />
           <div
-            className={`h-4 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} ${
-              widths[i][2]
-            }`}
+            className={`h-4 rounded ${isDark ? "bg-gray-700" : "bg-gray-300"} ${widths[i][2]
+              }`}
           />
         </div>
       ))}
@@ -434,16 +440,14 @@ function GenerationAppContent() {
         return (
           <div
             key={segment.id || index}
-            className={`mb-6 p-6 rounded-xl shadow-lg transition-all ${
-              isDarkMode
+            className={`mb-6 p-6 rounded-xl shadow-lg transition-all ${isDarkMode
                 ? "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-700/50"
                 : "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-indigo-200"
-            }`}
+              }`}
           >
             <p
-              className={`font-semibold mb-4 text-lg ${
-                isDarkMode ? "text-indigo-200" : "text-indigo-900"
-              }`}
+              className={`font-semibold mb-4 text-lg ${isDarkMode ? "text-indigo-200" : "text-indigo-900"
+                }`}
             >
               {segment.question}
             </p>
@@ -456,19 +460,18 @@ function GenerationAppContent() {
                     handleChoiceSelection(segment.id!, optionLabels[idx])
                   }
                   disabled={!!segment.user_choice}
-                  className={`w-full text-left px-5 py-4 rounded-lg font-medium transition-all transform ${
-                    segment.user_choice === optionLabels[idx]
+                  className={`w-full text-left px-5 py-4 rounded-lg font-medium transition-all transform ${segment.user_choice === optionLabels[idx]
                       ? isDarkMode
                         ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-[1.02]"
                         : "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg scale-[1.02]"
                       : !!segment.user_choice
-                      ? isDarkMode
-                        ? "bg-gray-800 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : isDarkMode
-                      ? "bg-gray-800/50 text-gray-200 border border-indigo-700/30 hover:bg-gray-700/50 hover:border-indigo-600/50 hover:scale-[1.01]"
-                      : "bg-white text-gray-800 border-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 hover:scale-[1.01]"
-                  }`}
+                        ? isDarkMode
+                          ? "bg-gray-800 text-gray-600 cursor-not-allowed"
+                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : isDarkMode
+                          ? "bg-gray-800/50 text-gray-200 border border-indigo-700/30 hover:bg-gray-700/50 hover:border-indigo-600/50 hover:scale-[1.01]"
+                          : "bg-white text-gray-800 border-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 hover:scale-[1.01]"
+                    }`}
                 >
                   {optionLabels[idx]}
                 </button>
@@ -480,26 +483,23 @@ function GenerationAppContent() {
         return (
           <div
             key={segment.id || index}
-            className={`mb-6 p-6 rounded-xl text-center shadow-lg ${
-              isDarkMode
+            className={`mb-6 p-6 rounded-xl text-center shadow-lg ${isDarkMode
                 ? "bg-gradient-to-br from-teal-900/40 to-green-900/40 border border-teal-700/50"
                 : "bg-gradient-to-br from-teal-50 to-green-50 border-2 border-teal-200"
-            }`}
+              }`}
           >
             <p
-              className={`mb-4 text-lg font-medium ${
-                isDarkMode ? "text-teal-200" : "text-teal-900"
-              }`}
+              className={`mb-4 text-lg font-medium ${isDarkMode ? "text-teal-200" : "text-teal-900"
+                }`}
             >
               Would you like to save your story progress?
             </p>
             <button
               onClick={handleSaveStory}
-              className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
-                isDarkMode
+              className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${isDarkMode
                   ? "bg-gradient-to-r from-teal-600 to-green-600 text-white hover:shadow-teal-500/50"
                   : "bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-teal-400/50"
-              }`}
+                }`}
             >
               Save Story
             </button>
@@ -512,11 +512,10 @@ function GenerationAppContent() {
 
   const sidebarContent = (
     <div
-      className={`rounded-2xl p-6 shadow-xl sticky top-24 transition-colors ${
-        isDarkMode
+      className={`rounded-2xl p-6 shadow-xl sticky top-24 transition-colors ${isDarkMode
           ? "bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700"
           : "bg-gradient-to-br from-white to-gray-50 border border-gray-200"
-      }`}
+        }`}
     >
       <h2
         className={`text-2xl font-bold mb-6 text-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent`}
@@ -525,9 +524,8 @@ function GenerationAppContent() {
         {storyMetadata.story_title || "Your Story"}
       </h2>
       <div
-        className={`space-y-4 mb-6 pb-6 border-b ${
-          isDarkMode ? "border-gray-700" : "border-gray-300"
-        }`}
+        className={`space-y-4 mb-6 pb-6 border-b ${isDarkMode ? "border-gray-700" : "border-gray-300"
+          }`}
       >
         <div className="flex justify-between items-center">
           <label htmlFor="chapter-select" className="font-semibold text-sm">
@@ -538,11 +536,10 @@ function GenerationAppContent() {
             value={currentChapter}
             onChange={(e) => handleChapterChange(Number(e.target.value))}
             disabled={isLoading || isConnected}
-            className={`rounded-lg px-3 py-1.5 text-sm font-bold w-28 text-center ${
-              isDarkMode
+            className={`rounded-lg px-3 py-1.5 text-sm font-bold w-28 text-center ${isDarkMode
                 ? "bg-indigo-900/40 text-indigo-300 border border-indigo-700/50"
                 : "bg-indigo-100 text-indigo-700 border border-indigo-200"
-            }`}
+              }`}
           >
             {Array.from({ length: totalChapters }, (_, i) => i + 1).map(
               (num) => (
@@ -556,11 +553,10 @@ function GenerationAppContent() {
         <div className="flex justify-between items-center">
           <span className="font-semibold text-sm">Word Count:</span>
           <span
-            className={`px-3 py-1 rounded-full text-sm font-bold ${
-              isDarkMode
+            className={`px-3 py-1 rounded-full text-sm font-bold ${isDarkMode
                 ? "bg-teal-900/40 text-teal-300"
                 : "bg-teal-100 text-teal-700"
-            }`}
+              }`}
           >
             {wordCount.toLocaleString()}
           </span>
@@ -569,11 +565,10 @@ function GenerationAppContent() {
           <div className="flex justify-between items-center">
             <span className="font-semibold text-sm">Scene:</span>
             <span
-              className={`px-3 py-1 rounded-full text-sm font-bold ${
-                isDarkMode
+              className={`px-3 py-1 rounded-full text-sm font-bold ${isDarkMode
                   ? "bg-purple-900/40 text-purple-300"
                   : "bg-purple-100 text-purple-700"
-              }`}
+                }`}
             >
               {continueSceneId}
             </span>
@@ -581,29 +576,26 @@ function GenerationAppContent() {
         )}
       </div>
       <div
-        className={`mb-6 pb-6 border-b ${
-          isDarkMode ? "border-gray-700" : "border-gray-300"
-        }`}
+        className={`mb-6 pb-6 border-b ${isDarkMode ? "border-gray-700" : "border-gray-300"
+          }`}
       >
         <p className="text-xs font-semibold mb-2 uppercase tracking-wide opacity-70">
           Connection Status
         </p>
         <div className="flex items-center space-x-2">
           <div
-            className={`w-3 h-3 rounded-full ${
-              isConnected
+            className={`w-3 h-3 rounded-full ${isConnected
                 ? "bg-green-500 animate-pulse shadow-lg shadow-green-500/50"
                 : "bg-gray-400"
-            }`}
+              }`}
           />
           <p
-            className={`text-sm font-medium ${
-              isConnected
+            className={`text-sm font-medium ${isConnected
                 ? isDarkMode
                   ? "text-green-400"
                   : "text-green-600"
                 : "text-gray-500"
-            }`}
+              }`}
           >
             {connectionStatus}
           </p>
@@ -612,28 +604,26 @@ function GenerationAppContent() {
       <button
         onClick={handleContinueStory}
         disabled={isConnected || currentChapter < totalChapters}
-        className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all transform shadow-lg ${
-          isConnected || currentChapter < totalChapters
+        className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all transform shadow-lg ${isConnected || currentChapter < totalChapters
             ? isDarkMode
               ? "bg-gray-700 cursor-not-allowed text-gray-500"
               : "bg-gray-300 cursor-not-allowed text-gray-500"
             : "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white hover:scale-105 hover:shadow-xl"
-        }`}
+          }`}
       >
         {isConnected
           ? "✨ Generating..."
           : currentChapter < totalChapters
-          ? "Viewing Old Chapter"
-          : "Continue Story"}
+            ? "Viewing Old Chapter"
+            : "Continue Story"}
       </button>
     </div>
   );
 
   return (
     <div
-      className={`min-h-screen flex flex-col transition-colors duration-300 ${
-        isDarkMode ? "bg-gray-900 text-gray-100" : "bg-slate-50 text-gray-900"
-      }`}
+      className={`min-h-screen flex flex-col transition-colors duration-300 ${isDarkMode ? "bg-gray-900 text-gray-100" : "bg-slate-50 text-gray-900"
+        }`}
     >
       <Navbar isDark={isDarkMode} />
 
@@ -662,9 +652,8 @@ function GenerationAppContent() {
       )}
 
       <main
-        className={`flex flex-col lg:flex-row flex-1 container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 gap-8 ${
-          isFullscreen ? "p-0 pt-0" : ""
-        }`}
+        className={`flex flex-col lg:flex-row flex-1 container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 gap-8 ${isFullscreen ? "p-0 pt-0" : ""
+          }`}
       >
         {!isFullscreen && (
           <aside className="w-full lg:w-80 lg:flex-shrink-0">
@@ -674,23 +663,19 @@ function GenerationAppContent() {
 
         <div className="flex-1 min-w-0">
           <div
-            className={`rounded-xl shadow-lg overflow-y-auto transition-all ${
-              isFullscreen
+            className={`rounded-xl shadow-lg overflow-y-auto transition-all ${isFullscreen
                 ? "fixed inset-0 z-50 rounded-none"
                 : "h-full max-h-[calc(100vh-150px)]"
-            } ${
-              isDarkMode
+              } ${isDarkMode
                 ? "bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700"
                 : "bg-gradient-to-br from-white to-gray-50 border border-gray-200"
-            }`}
+              }`}
           >
             {isFullscreen && (
               <div
-                className={`sticky top-0 z-10 flex items-center justify-between p-4 ${
-                  isDarkMode ? "bg-gray-900/95" : "bg-white/95"
-                } backdrop-blur-sm border-b ${
-                  isDarkMode ? "border-gray-700" : "border-gray-200"
-                }`}
+                className={`sticky top-0 z-10 flex items-center justify-between p-4 ${isDarkMode ? "bg-gray-900/95" : "bg-white/95"
+                  } backdrop-blur-sm border-b ${isDarkMode ? "border-gray-700" : "border-gray-200"
+                  }`}
               >
                 <div className="flex-1"></div>
                 <span className="text-lg font-bold">
@@ -699,11 +684,10 @@ function GenerationAppContent() {
                 <div className="flex-1 flex justify-end">
                   <button
                     onClick={() => setIsFullscreen(false)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      isDarkMode
+                    className={`p-2 rounded-lg transition-colors ${isDarkMode
                         ? "hover:bg-gray-800 text-gray-300"
                         : "hover:bg-gray-100 text-gray-700"
-                    }`}
+                      }`}
                   >
                     <Minimize2 size={20} />
                   </button>
@@ -714,17 +698,15 @@ function GenerationAppContent() {
             <div className={`p-6 sm:p-8 lg:p-12 ${isFullscreen ? "max-w-4xl mx-auto" : ""}`}>
               {!isFullscreen && (
                 <div
-                  className={`flex items-center justify-between mb-6 pb-4 border-b ${
-                    isDarkMode ? "border-gray-700" : "border-gray-200"
-                  }`}
+                  className={`flex items-center justify-between mb-6 pb-4 border-b ${isDarkMode ? "border-gray-700" : "border-gray-200"
+                    }`}
                 >
                   <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      isDarkMode
+                    className={`p-2 rounded-lg transition-colors ${isDarkMode
                         ? "hover:bg-gray-700 text-gray-300"
                         : "hover:bg-gray-100 text-gray-700"
-                    }`}
+                      }`}
                     title="Text Settings"
                   >
                     <Type size={20} />
@@ -732,22 +714,20 @@ function GenerationAppContent() {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setIsDarkMode(!isDarkMode)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        isDarkMode
+                      className={`p-2 rounded-lg transition-colors ${isDarkMode
                           ? "bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30"
                           : "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
-                      }`}
+                        }`}
                       title={isDarkMode ? "Light Mode" : "Dark Mode"}
                     >
                       {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
                     <button
                       onClick={() => setIsFullscreen(!isFullscreen)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        isDarkMode
+                      className={`p-2 rounded-lg transition-colors ${isDarkMode
                           ? "hover:bg-gray-700 text-gray-300"
                           : "hover:bg-gray-100 text-gray-700"
-                      }`}
+                        }`}
                       title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                     >
                       {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
@@ -757,20 +737,18 @@ function GenerationAppContent() {
               )}
               {showSettings && !isFullscreen && (
                 <div
-                  className={`flex flex-wrap items-center gap-4 mb-6 p-4 rounded-lg animate-fade-in ${
-                    isDarkMode ? "bg-gray-800/50" : "bg-gray-100"
-                  }`}
+                  className={`flex flex-wrap items-center gap-4 mb-6 p-4 rounded-lg animate-fade-in ${isDarkMode ? "bg-gray-800/50" : "bg-gray-100"
+                    }`}
                 >
                   <div className="flex flex-col">
                     <label className="text-sm font-semibold mb-1">Font</label>
                     <select
                       value={fontFamily}
                       onChange={(e) => setFontFamily(e.target.value)}
-                      className={`rounded-lg px-3 py-1.5 text-sm ${
-                        isDarkMode
+                      className={`rounded-lg px-3 py-1.5 text-sm ${isDarkMode
                           ? "bg-gray-700 text-gray-200"
                           : "bg-white text-gray-800"
-                      }`}
+                        }`}
                     >
                       {[
                         "'Inter', sans-serif",
@@ -794,11 +772,10 @@ function GenerationAppContent() {
                     <select
                       value={fontSize}
                       onChange={(e) => setFontSize(Number(e.target.value))}
-                      className={`rounded-lg px-3 py-1.5 text-sm ${
-                        isDarkMode
+                      className={`rounded-lg px-3 py-1.5 text-sm ${isDarkMode
                           ? "bg-gray-700 text-gray-200"
                           : "bg-white text-gray-800"
-                      }`}
+                        }`}
                     >
                       {[14, 16, 18, 20, 22, 24].map((size) => (
                         <option key={size} value={size}>
@@ -822,9 +799,8 @@ function GenerationAppContent() {
                 </>
               ) : (
                 <p
-                  className={`italic text-center py-10 ${
-                    isDarkMode ? "text-gray-500" : "text-gray-400"
-                  }`}
+                  className={`italic text-center py-10 ${isDarkMode ? "text-gray-500" : "text-gray-400"
+                    }`}
                 >
                   {currentChapter < totalChapters
                     ? `Viewing Chapter ${currentChapter}. Select the latest chapter to continue.`
@@ -862,8 +838,7 @@ function GenerationAppContent() {
         .animate-bounce-in { animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
 
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: ${
-          isDarkMode ? "#1F2937" : "#F3F4F6"
+        ::-webkit-scrollbar-track { background: ${isDarkMode ? "#1F2937" : "#F3F4F6"
         }; }
         ::-webkit-scrollbar-thumb {
           background: ${isDarkMode ? "#4F46E5" : "#4338CA"};
