@@ -553,7 +553,7 @@ export default function Dashboard() {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-lg font-semibold mb-3 text-[#2D3436]">
-                Make "{showPublicConfirm.story.title}" Public?
+                Make &quot;{showPublicConfirm.story.title}&quot; Public?
               </h3>
               <p className="text-[#2D3436] text-sm leading-relaxed mb-6">
                 This story will be visible to everyone in the final release.
