@@ -38,11 +38,11 @@ const GRADIENT_COLORS = [
 
 const TIER_1_MODELS: { [key: string]: string } = {
     "gpt-5-nano-2025-08-07": "Flicker",
-    "gemini-2.5-flash-lite": "Kite",
+
     "openai/gpt-oss-120b": "Lyric",
     "llama-3.3-70b-versatile": "Lyra"
 };
-
+//    "gemini-2.5-flash-lite": "Kite",
 const TIER_2_MODELS: { [key: string]: string } = {
     "gpt-5-mini-2025-08-07": "Ember",
     "gpt-4o-mini-2024-07-18": "Echo",
