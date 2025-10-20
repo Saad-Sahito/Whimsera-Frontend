@@ -31,9 +31,9 @@ const themes = [
 
 const tiers = [
   { value: 1, name: "Explorer", description: "Begin your journey", icon: "🌱" },
-  { value: 2, name: "Adventurer", description: "Seek new horizons", icon: "⚔️" },
-  { value: 3, name: "Hero", description: "Face greater challenges", icon: "🛡️" },
-  { value: 4, name: "Legend", description: "Master your destiny", icon: "👑" },
+  { value: 1, name: "Adventurer", description: "Seek new horizons", icon: "⚔️" },
+  { value: 1, name: "Hero", description: "Face greater challenges", icon: "🛡️" },
+  { value: 1, name: "Legend", description: "Master your destiny", icon: "👑" },
 ];
 
 export default function ProfileSetup() {
