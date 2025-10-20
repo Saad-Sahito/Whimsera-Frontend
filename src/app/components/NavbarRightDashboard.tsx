@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -138,14 +139,14 @@ export default function NavbarRightDashboard() {
                 Start New Story
               </button>
             </Link>
-            <Link href="/feedback">
+            <Link href="/feedback" target="_blank" rel="noopener noreferrer">
               <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-md font-poppins font-bold text-sm sm:text-base md:text-lg bg-[#FFD166] text-[#2D3436] hover:bg-[#FF7675] hover:text-white transition">
                 Give Feedback
               </button>
             </Link>
 
             {/* 👤 Profile Dropdown */}
-            <div ref={dropdownRef} className="relative profile-dropdown">  {/* ← Add class here */}
+            <div ref={dropdownRef} className="relative profile-dropdown">
               <div
                 onClick={() => setShowDropdown((prev) => !prev)}
                 className="text-white text-2xl sm:text-3xl md:text-4xl hover:text-[#FFD166] cursor-pointer select-none"
@@ -178,7 +179,6 @@ export default function NavbarRightDashboard() {
                 )}
               </AnimatePresence>
             </div>
-
           </>
         )}
       </div>

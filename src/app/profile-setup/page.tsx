@@ -37,7 +37,7 @@ const tiers = [
 ];
 
 export default function ProfileSetup() {
-  const { setAuthenticated, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const router = useRouter();

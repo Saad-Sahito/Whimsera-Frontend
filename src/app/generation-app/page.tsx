@@ -12,6 +12,7 @@ import {
   Moon,
   Sun,
   Type,
+  MessageCircle,
 } from "lucide-react";
 
 interface StorySegment {
@@ -33,7 +34,6 @@ interface StoryMetadata {
 
 // --- COMPONENTS ---
 
-// Navbar Component
 // Navbar Component
 function Navbar({ isDark }: { isDark: boolean }) {
   return (
@@ -63,13 +63,28 @@ function Navbar({ isDark }: { isDark: boolean }) {
             Whimsera Story Theatre
           </h1>
 
-          <div className="w-40"></div>
+          <div className="flex items-center space-x-2">
+            <a
+              href="/feedback"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`p-2 rounded-lg transition-all hover:scale-105 ${isDark
+                  ? "text-gray-300 hover:bg-gray-700/50 hover:text-orange-400"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+                }`}
+              title="Send Feedback"
+            >
+              <MessageCircle size={20} />
+            </a>
+            <div className="w-10"></div>
+          </div>
         </div>
       </div>
     </header>
   );
 }
-// Streaming text component with gradient effect and completion callback
+
+// Streaming text component with line-by-line effect and completion callback
 function StreamingText({
   text,
   fontSize,
@@ -86,18 +101,20 @@ function StreamingText({
   onStreamComplete?: () => void;
 }) {
   const [displayedText, setDisplayedText] = useState("");
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentLine, setCurrentLine] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const lines = text.split('\n').filter(line => line.trim() !== '');
 
   useEffect(() => {
     if (!shouldStream) {
       setDisplayedText(text);
-      setCurrentIndex(text.length);
       onStreamComplete?.();
       return;
     }
 
-    setDisplayedText("");
-    setCurrentIndex(0);
+    setDisplayedText(lines.slice(0, 1).join('\n'));
+    setCurrentLine(1);
   }, [text, shouldStream]);
 
   const onStreamCompleteRef = useRef(onStreamComplete);
@@ -106,49 +123,33 @@ function StreamingText({
   }, [onStreamComplete]);
 
   useEffect(() => {
-    if (!shouldStream) return;
+    if (!shouldStream || currentLine >= lines.length) return;
 
-    if (currentIndex < text.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(text.slice(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
-      }, 10);
-      return () => clearTimeout(timer);
-    } else if (currentIndex === text.length && text.length > 0) {
+    setIsTyping(true);
+    const timer = setTimeout(() => {
+      setDisplayedText(lines.slice(0, currentLine + 1).join('\n'));
+      setCurrentLine(currentLine + 1);
+      setIsTyping(false);
+    }, 300); // 300ms delay between lines for faster streaming
+
+    return () => clearTimeout(timer);
+  }, [currentLine, lines, shouldStream]);
+
+  useEffect(() => {
+    if (currentLine >= lines.length && lines.length > 0) {
       onStreamCompleteRef.current?.();
     }
-  }, [currentIndex, text, shouldStream]);
-
-  const words = displayedText.split(" ");
+  }, [currentLine, lines.length]);
 
   return (
     <p
       className="whitespace-pre-wrap"
-      style={{ fontFamily, fontSize: `${fontSize}px` }}
+      style={{ fontFamily, fontSize: `${fontSize}px`, color: textColor }}
     >
-      {words.map((word, idx) => {
-        const wordIndex = displayedText.split(" ", idx).join(" ").length;
-        const age = currentIndex - wordIndex;
-        const isNew = age < 50 && currentIndex < text.length;
-
-        return (
-          <span
-            key={idx}
-            style={{
-              color: isNew ? "transparent" : textColor,
-              background: isNew
-                ? "linear-gradient(90deg, #6C5CE7, #00BFA6, #74C0FC, #FFD166)"
-                : "none",
-              WebkitBackgroundClip: isNew ? "text" : "unset",
-              backgroundClip: isNew ? "text" : "unset",
-              transition: "all 500ms ease-out",
-            }}
-          >
-            {word}
-            {idx < words.length - 1 ? " " : ""}
-          </span>
-        );
-      })}
+      {displayedText}
+      {isTyping && currentLine < lines.length && (
+        <span className="inline-block w-2 h-4 bg-current ml-1 animate-blink" />
+      )}
     </p>
   );
 }
@@ -296,10 +297,7 @@ function GenerationAppContent() {
     }
   }, [messageQueue, isStreaming]);
 
-  // Scroll to bottom effect
-  useEffect(() => {
-    storyEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [storySegments]);
+  // REMOVED: Scroll to bottom effect - no more auto-scroll
 
   // Fetch Story Segments (for initial load and chapter change)
   useEffect(() => {
@@ -355,8 +353,9 @@ function GenerationAppContent() {
     const fetchStoryMetadata = async () => {
       setIsLoading(true);
       try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         const response = await fetch(
-          `/api/stories/progress/${userId}/${storyId}?story_type=${storyType}`,
+          `${backendUrl}/stories/progress/${userId}/${storyId}?story_type=${storyType}`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
 
@@ -833,9 +832,14 @@ function GenerationAppContent() {
           70% { transform: translate(-50%, -50%) scale(0.9); }
           100% { transform: translate(-50%, -50%) scale(1); }
         }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
         .animate-fade-in { animation: fade-in 0.3s ease-out; }
         .animate-slide-in { animation: slide-in 0.5s ease-out; }
         .animate-bounce-in { animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .animate-blink { animation: blink 1s infinite; }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: ${isDarkMode ? "#1F2937" : "#F3F4F6"
