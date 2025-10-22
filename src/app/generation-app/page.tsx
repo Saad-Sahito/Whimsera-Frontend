@@ -25,16 +25,36 @@ interface StorySegment {
   word_count?: number;
   FATAL?: string;
   EXCEPTION?: string;
+  message?: string;
 }
 
 interface StoryMetadata {
   story_title?: string;
-  [key: string]: number | string | undefined;
+  model?: string;
+  complete?: boolean;
+  [key: string]: number | string | boolean | undefined;
 }
+
+const modelToAuthor: { [key: string]: string } = {
+  "gpt-5-nano-2025-08-07": "Flicker",
+  "gemini-2.5-flash-lite": "Kite",
+  "openai/gpt-oss-120b": "Lyric",
+  "llama-3.3-70b-versatile": "Lyra",
+  "gpt-5-mini-2025-08-07": "Ember",
+  "gpt-4o-mini-2024-07-18": "Echo",
+  "gemini-2.5-flash": "Nova",
+  "claude-haiku-4-5-20251001": "Haiku",
+  "claude-sonnet-4-5-20250929": "Sonnet",
+  "gpt-5-2025-08-07": "Aurora",
+  "gpt-4o-2024-08-06": "Vesper",
+  "gemini-2.5-pro": "Solstice",
+  "gpt-4.1-2025-04-14": "Scribe",
+  "claude-opus-4-1-20250805": "Opus",
+  "gpt-5-pro-2025-10-06": "Eclipse",
+};
 
 // --- COMPONENTS ---
 
-// Navbar Component
 function Navbar({ isDark }: { isDark: boolean }) {
   return (
     <header
@@ -84,7 +104,6 @@ function Navbar({ isDark }: { isDark: boolean }) {
   );
 }
 
-// Streaming text component with line-by-line effect and completion callback
 function StreamingText({
   text,
   fontSize,
@@ -130,7 +149,7 @@ function StreamingText({
       setDisplayedText(lines.slice(0, currentLine + 1).join('\n'));
       setCurrentLine(currentLine + 1);
       setIsTyping(false);
-    }, 300); // 300ms delay between lines for faster streaming
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [currentLine, lines, shouldStream]);
@@ -154,7 +173,6 @@ function StreamingText({
   );
 }
 
-// Loading skeleton component
 function LoadingSkeleton({ isDark }: { isDark: boolean }) {
   const widths = [
     ["w-[85%]", "w-[95%]", "w-[75%]"],
@@ -185,7 +203,6 @@ function LoadingSkeleton({ isDark }: { isDark: boolean }) {
 }
 
 function GenerationAppContent() {
-  // Story State
   const [wordCount, setWordCount] = useState<number>(0);
   const [currentChapter, setCurrentChapter] = useState<number>(1);
   const [totalChapters, setTotalChapters] = useState<number>(1);
@@ -193,15 +210,12 @@ function GenerationAppContent() {
   const [storyMetadata, setStoryMetadata] = useState<StoryMetadata>({});
   const [storySegments, setStorySegments] = useState<StorySegment[]>([]);
   const [initialLoadCount, setInitialLoadCount] = useState<number>(0);
-
-  // App Status State
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
   const [messageQueue, setMessageQueue] = useState<StorySegment[]>([]);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-
-  // UI Preferences State
+  const [isStoryComplete, setIsStoryComplete] = useState<boolean>(false);
   const [fontFamily, setFontFamily] = useState<string>("'Inter', sans-serif");
   const [fontSize, setFontSize] = useState<number>(18);
   const [textColor, setTextColor] = useState<string>("#2D3436");
@@ -215,13 +229,11 @@ function GenerationAppContent() {
   const { userId, accessToken } = useAuth();
   const storyEndRef = useRef<HTMLDivElement>(null);
 
-  // Update text color when dark mode changes
   useEffect(() => {
     setTextColor(isDarkMode ? "#E5E5E5" : "#2D3436");
     document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
 
-  // Handle logout on page close or navigation
   useEffect(() => {
     const handleBeforeUnload = async () => {
       if (userId && storyId && storyType) {
@@ -244,8 +256,7 @@ function GenerationAppContent() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [userId, storyId, storyType, accessToken]);
 
-  // WebSocket Hook
-  const { connect, sendChoice, continueChapter, isConnected, connectionStatus } =
+  const { connect, sendChoice, continueChapter, sendMessage, isConnected, connectionStatus } =
     useWebSocket({
       userId,
       storyId,
@@ -254,6 +265,10 @@ function GenerationAppContent() {
       onMessage: (message) => {
         console.log("Received message, adding to queue:", message);
         if (message.type === "status") {
+          if (message.message === "story complete") {
+            setIsStoryComplete(true);
+            return;
+          }
           if (message.word_count !== undefined) {
             setWordCount((prev) => prev + (message.word_count ?? 0));
             return;
@@ -284,7 +299,6 @@ function GenerationAppContent() {
       onError: (err) => setError(`WebSocket error: ${err}`),
     });
 
-  // Message Queue Processor
   useEffect(() => {
     if (isStreaming || messageQueue.length === 0) return;
 
@@ -297,9 +311,6 @@ function GenerationAppContent() {
     }
   }, [messageQueue, isStreaming]);
 
-  // REMOVED: Scroll to bottom effect - no more auto-scroll
-
-  // Fetch Story Segments (for initial load and chapter change)
   useEffect(() => {
     if (!userId || !storyId || !storyType) return;
 
@@ -342,7 +353,6 @@ function GenerationAppContent() {
     fetchStorySegments();
   }, [userId, storyId, storyType, currentChapter, accessToken]);
 
-  // Fetch Story Metadata (on initial page load)
   useEffect(() => {
     if (!userId || !storyId || !storyType) {
       setError("Missing essential story information. Please start over.");
@@ -370,6 +380,7 @@ function GenerationAppContent() {
         setTotalChapters(latestChapter);
         setContinueSceneId(data.data?.continue_scene_id || null);
         setWordCount(data.data?.word_count || 0);
+        setIsStoryComplete(data.data?.complete || false);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(`Failed to load story metadata: ${err.message}.`);
@@ -377,13 +388,11 @@ function GenerationAppContent() {
           setError("Failed to load story metadata: Unknown error.");
         }
       }
-      // setIsLoading(false) is handled by the other useEffect
     };
 
     fetchStoryMetadata();
   }, [userId, storyId, storyType, accessToken]);
 
-  // --- HANDLERS ---
   const handleChoiceSelection = (segmentId: string, choice: string) => {
     setStorySegments((prev) =>
       prev.map((seg) =>
@@ -402,8 +411,64 @@ function GenerationAppContent() {
     setTimeout(() => setShowSaveConfirmation(false), 3000);
   };
 
+  const handleRevertStory = async () => {
+    const message = { continue_chapter: 0 };
+    if (isConnected) {
+      sendMessage(message);
+    }
+    setStorySegments((prev) => prev.filter((seg) => seg.type !== "save"));
+    setShowSaveConfirmation(true);
+    setTimeout(() => setShowSaveConfirmation(false), 3000);
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(
+        `${backendUrl}/stories/progress/${userId}/${storyId}?story_type=${storyType}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!response.ok) throw new Error("Failed to fetch story metadata.");
+      const data = await response.json();
+      if (data.status !== "success")
+        throw new Error(data.message || "Failed to fetch story metadata");
+      setWordCount(data.data?.word_count || 0);
+      setIsStoryComplete(data.data?.complete || false);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`Failed to update story metadata: ${err.message}.`);
+      } else {
+        setError("Failed to update story metadata: Unknown error.");
+      }
+    }
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(
+        `${backendUrl}/stories/cluster/${userId}/${storyId}?story_type=${storyType}&chapter_number=${currentChapter}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!response.ok) throw new Error(`Failed to fetch story chapter.`);
+      const data = await response.json();
+      if (data.status !== "success")
+        throw new Error(data.message || "Failed to fetch story segments");
+      const segments: StorySegment[] = (data.data || []).map(
+        (seg: unknown, idx: number) => ({
+          ...(seg as StorySegment),
+          id: `${Date.now()}-${idx}`,
+        })
+      );
+      setStorySegments(segments);
+      setInitialLoadCount(segments.length);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`Failed to load story segments: ${err.message}.`);
+      } else {
+        setError("Failed to load story segments: Unknown error.");
+      }
+    }
+  };
+
   const handleContinueStory = () => {
-    if (currentChapter === totalChapters) {
+    if (currentChapter === totalChapters && !isStoryComplete) {
       connect();
     }
   };
@@ -416,7 +481,6 @@ function GenerationAppContent() {
     }
   };
 
-  // --- RENDER LOGIC ---
   const renderSegment = (segment: StorySegment, index: number) => {
     const shouldStreamText = index >= initialLoadCount;
 
@@ -493,21 +557,34 @@ function GenerationAppContent() {
             >
               Would you like to save your story progress?
             </p>
-            <button
-              onClick={handleSaveStory}
-              className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${isDarkMode
-                  ? "bg-gradient-to-r from-teal-600 to-green-600 text-white hover:shadow-teal-500/50"
-                  : "bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-teal-400/50"
-                }`}
-            >
-              Save Story
-            </button>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleSaveStory}
+                className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${isDarkMode
+                    ? "bg-gradient-to-r from-teal-600 to-green-600 text-white hover:shadow-teal-500/50"
+                    : "bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-teal-400/50"
+                  }`}
+              >
+                Save Story
+              </button>
+              <button
+                onClick={handleRevertStory}
+                className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${isDarkMode
+                    ? "bg-gradient-to-r from-red-600 to-orange-600 text-white hover:shadow-red-500/50"
+                    : "bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-red-400/50"
+                  }`}
+              >
+                Revert to Previous Save
+              </button>
+            </div>
           </div>
         );
       default:
         return null;
     }
   };
+
+  const authorName = storyMetadata.model ? modelToAuthor[storyMetadata.model] || "Unknown" : "Unknown";
 
   const sidebarContent = (
     <div
@@ -560,6 +637,17 @@ function GenerationAppContent() {
             {wordCount.toLocaleString()}
           </span>
         </div>
+        <div className="flex justify-between items-center">
+          <span className="font-semibold text-sm">Author:</span>
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-bold ${isDarkMode
+                ? "bg-purple-900/40 text-purple-300"
+                : "bg-purple-100 text-purple-700"
+              }`}
+          >
+            {authorName}
+          </span>
+        </div>
         {continueSceneId && currentChapter === totalChapters && (
           <div className="flex justify-between items-center">
             <span className="font-semibold text-sm">Scene:</span>
@@ -602,19 +690,21 @@ function GenerationAppContent() {
       </div>
       <button
         onClick={handleContinueStory}
-        disabled={isConnected || currentChapter < totalChapters}
-        className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all transform shadow-lg ${isConnected || currentChapter < totalChapters
+        disabled={isConnected || currentChapter < totalChapters || isStoryComplete}
+        className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all transform shadow-lg ${isConnected || currentChapter < totalChapters || isStoryComplete
             ? isDarkMode
               ? "bg-gray-700 cursor-not-allowed text-gray-500"
               : "bg-gray-300 cursor-not-allowed text-gray-500"
             : "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white hover:scale-105 hover:shadow-xl"
           }`}
       >
-        {isConnected
-          ? "✨ Generating..."
-          : currentChapter < totalChapters
-            ? "Viewing Old Chapter"
-            : "Continue Story"}
+        {isStoryComplete
+          ? "Story Complete"
+          : isConnected
+            ? "✨ Generating..."
+            : currentChapter < totalChapters
+              ? "Viewing Old Chapter"
+              : "Continue Story"}
       </button>
     </div>
   );
@@ -803,7 +893,9 @@ function GenerationAppContent() {
                 >
                   {currentChapter < totalChapters
                     ? `Viewing Chapter ${currentChapter}. Select the latest chapter to continue.`
-                    : 'Click "Continue Story" to begin.'}
+                    : isStoryComplete
+                      ? "The story has concluded."
+                      : 'Click "Continue Story" to begin.'}
                 </p>
               )}
             </div>

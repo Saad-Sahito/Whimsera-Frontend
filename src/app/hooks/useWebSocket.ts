@@ -12,6 +12,7 @@ interface WebSocketMessage {
   word_count?: number;
   FATAL?: string;
   EXCEPTION?: string;
+  message?: string;
 }
 
 interface UseWebSocketProps {

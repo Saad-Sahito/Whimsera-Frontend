@@ -26,6 +26,7 @@ interface UserProfile {
   nickname: string;
   tier: number;
   stories: Story[];
+  monthly_word_count: number;
 }
 
 // Model mapping
@@ -52,6 +53,13 @@ const TIER_4_MODELS: { [key: string]: string } = {
   "claude-opus-4-1-20250805": "Opus",
   "gpt-5-pro-2025-10-06": "Eclipse",
   "gemini-2.5-pro": "Solara",
+};
+
+const MAX_WORDS_PER_TIER: { [key: number]: number } = {
+  1: 100000,
+  2: 200000,
+  3: 300000,
+  4: 400000,
 };
 
 const getModelDisplayName = (model: string): string => {
@@ -120,6 +128,7 @@ export default function Dashboard() {
         setUserProfile({
           nickname: data.profile.nickname,
           tier: data.profile.tier,
+          monthly_word_count: data.profile.monthly_word_count || 0,
           stories: data.stories || [],
         });
       } else setError(data.detail || "Failed to fetch profile");
@@ -131,7 +140,14 @@ export default function Dashboard() {
       setIsProcessing(false);
     }
   };
-
+const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
+    const maxWords = MAX_WORDS_PER_TIER[tier] || 100000;
+    return wordCount >= maxWords;
+  };
+  const getWordUsageDisplay = (tier: number, wordCount: number): string => {
+    const maxWords = MAX_WORDS_PER_TIER[tier] || 100000;
+    return `${wordCount.toLocaleString()}/${maxWords.toLocaleString()}`;
+  };
   useEffect(() => {
     if (!isAuthenticated || !userId || !accessToken) return;
     fetchProfile();
@@ -307,17 +323,56 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="ml-16 mt-32 flex items-center space-x-3"
+            className="ml-16 mt-32 flex items-center justify-between"
           >
-            <div
-              className={`px-4 py-2 rounded-full ${getTierBadgeClass(
-                userProfile.tier
-              )} font-medium text-sm shadow-lg`}
-            >
-              Tier {userProfile.tier}
+            <div className="flex items-center space-x-3">
+              <div
+                className={`px-4 py-2 rounded-full ${getTierBadgeClass(
+                  userProfile.tier
+                )} font-medium text-sm shadow-lg`}
+              >
+                Tier {userProfile.tier}
+              </div>
+              <span className="text-[#2D3436] text-lg">Current tier</span>
             </div>
-            <span className="text-[#2D3436] text-lg">Current tier</span>
+            
+            {/* Add Word Usage Display */}
+            <div className="flex flex-col items-end">
+              <div className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
+                hasReachedWordLimit(userProfile.tier, userProfile.monthly_word_count)
+                  ? 'bg-gradient-to-r from-[#FF7675] to-[#FFD166] text-[#2D3436]'
+                  : 'bg-white/60 border border-white/30 text-[#2D3436]'
+              }`}>
+                {getWordUsageDisplay(userProfile.tier, userProfile.monthly_word_count)}
+              </div>
+              <span className="text-xs text-[#2D3436] mt-1">Monthly Word Usage</span>
+            </div>
           </motion.div>
+
+          {/* Upgrade Prompt - Only show if not tier 4 and limit reached */}
+          {userProfile && 
+           userProfile.tier < 4 && 
+           hasReachedWordLimit(userProfile.tier, userProfile.monthly_word_count) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="ml-16 mt-2 mb-4 p-3 bg-gradient-to-r from-[#FFD166] to-[#FF7675] rounded-xl text-[#2D3436] max-w-2xl shadow-lg border-l-4 border-[#FF7675]"
+            >
+              <div className="flex items-start space-x-2">
+                <div className="flex-shrink-0 mt-0.5">
+                  <svg className="w-5 h-5 text-[#FF7675]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium">Monthly word limit reached!</p>
+                  <p className="text-sm mt-1">
+                    Upgrade to a higher tier to unlock more words per month and continue creating.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           <motion.h1
             initial={{ opacity: 0, y: 40 }}

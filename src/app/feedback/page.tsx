@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 // Model options with display names and backend keys
 const MODEL_OPTIONS = [
   { key: "gpt-5-nano-2025-08-07", name: "Flicker" },
-  { key: "gemini-2.5-flash-lite", name: "Kite" },
+  //{ key: "gemini-2.5-flash-lite", name: "Kite" },
   { key: "openai/gpt-oss-120b", name: "Lyric" },
   { key: "llama-3.3-70b-versatile", name: "Lyra" },
   { key: "gpt-5-mini-2025-08-07", name: "Ember" },
