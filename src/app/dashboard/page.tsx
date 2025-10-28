@@ -12,7 +12,7 @@ interface Story {
   title: string;
   story_id: string;
   story_type: string;
-  word_count: number;
+  story_word_count: number;
   latest_chapter_id: number;
   continue_scene_id: number;
   blurb: string;
@@ -30,47 +30,45 @@ interface UserProfile {
 }
 
 // Model mapping
-const TIER_1_MODELS: { [key: string]: string } = {
-  "gpt-5-nano-2025-08-07": "Flicker",
-  "gemini-2.5-flash-lite": "Kite",
-  "openai/gpt-oss-120b": "Lyric",
-  "llama-3.3-70b-versatile": "Lyra",
-};
-const TIER_2_MODELS: { [key: string]: string } = {
-  "gpt-5-mini-2025-08-07": "Ember",
-  "gpt-4o-mini-2024-07-18": "Echo",
-  "gemini-2.5-flash": "Nova",
-  "claude-haiku-4-5-20251001": "Haiku",
-};
-const TIER_3_MODELS: { [key: string]: string } = {
-  "claude-sonnet-4-5-20250929": "Sonnet",
-  "gpt-5-2025-08-07": "Aurora",
-  "gpt-4o-2024-08-06": "Vesper",
-  "gemini-2.5-pro": "Solstice",
-  "gpt-4.1-2025-04-14": "Scribe",
-};
-const TIER_4_MODELS: { [key: string]: string } = {
-  "claude-opus-4-1-20250805": "Opus",
-  "gpt-5-pro-2025-10-06": "Eclipse",
-  "gemini-2.5-pro": "Solara",
-};
+// const TIER_1_MODELS: { [key: string]: string } = {
+//   "gpt-5-nano-2025-08-07": "Flicker",
+//   "gemini-2.5-flash-lite": "Kite",
+//   "openai/gpt-oss-120b": "Lyric",
+//   "llama-3.3-70b-versatile": "Lyra",
+// };
+// const TIER_2_MODELS: { [key: string]: string } = {
+//   "gpt-5-mini-2025-08-07": "Ember",
+//   "gpt-4o-mini-2024-07-18": "Echo",
+//   "gemini-2.5-flash": "Nova",
+//   "claude-haiku-4-5-20251001": "Haiku",
+// };
+// const TIER_3_MODELS: { [key: string]: string } = {
+//   "claude-sonnet-4-5-20250929": "Sonnet",
+//   "gpt-5-2025-08-07": "Aurora",
+//   "gpt-4o-2024-08-06": "Vesper",
+//   "gemini-2.5-pro": "Solstice",
+//   "gpt-4.1-2025-04-14": "Scribe",
+// };
+// const TIER_4_MODELS: { [key: string]: string } = {
+//   "claude-opus-4-1-20250805": "Opus",
+//   "gpt-5-pro-2025-10-06": "Eclipse",
+//   "gemini-2.5-pro": "Solara",
+// };
 
 const MAX_WORDS_PER_TIER: { [key: number]: number } = {
   1: 100000,
-  2: 200000,
-  3: 300000,
-  4: 400000,
+  2: 200000
 };
 
-const getModelDisplayName = (model: string): string => {
-  return (
-    TIER_1_MODELS[model] ||
-    TIER_2_MODELS[model] ||
-    TIER_3_MODELS[model] ||
-    TIER_4_MODELS[model] ||
-    model
-  );
-};
+// const getModelDisplayName = (model: string): string => {
+//   return (
+//     TIER_1_MODELS[model] ||
+//     TIER_2_MODELS[model] ||
+//     TIER_3_MODELS[model] ||
+//     TIER_4_MODELS[model] ||
+//     model
+//   );
+// };
 
 // Loader Component
 const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
@@ -86,7 +84,7 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
           ease: "easeOut"
         }}
       >
-        <div 
+        <div
           className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
           style={{
             backgroundSize: '200% 100%',
@@ -120,7 +118,8 @@ export default function Dashboard() {
   const fetchProfile = async () => {
     setIsProcessing(true);
     try {
-      const res = await fetch(`/api/user-profile/${userId}`, {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const res = await fetch(`${backendUrl}/users/${userId}/profile`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data = await res.json();
@@ -140,7 +139,7 @@ export default function Dashboard() {
       setIsProcessing(false);
     }
   };
-const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
+  const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
     const maxWords = MAX_WORDS_PER_TIER[tier] || 100000;
     return wordCount >= maxWords;
   };
@@ -153,26 +152,31 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
     fetchProfile();
   }, [isAuthenticated, userId, accessToken]);
 
-  const handleDeleteStory = async (storyTitle: string, storyType: string) => {
+  const handleDeleteStory = async (storyTitle: string, storyType: string, storyId: string) => {
     setIsProcessing(true);
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
       const response = await fetch(
-        `${backendUrl}/users/${userId}/stories/${encodeURIComponent(
-          storyTitle || ""
-        )}?story_type=${encodeURIComponent(storyType)}`,
+        `${backendUrl}/users/${userId}/stories/${encodeURIComponent(storyId)}/delete`,
         {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            story_title: storyTitle,
+            story_type: storyType,
+          }),
         }
       );
 
       const data = await response.json();
-      if (response.ok && data.status === "success") await fetchProfile();
-      else setError(data.message || "Failed to delete story");
+      if (response.ok && data.status === "success") {
+        await fetchProfile();               // refresh the list
+      } else {
+        setError(data.message || "Failed to delete story");
+      }
     } catch (err) {
       setError("Error deleting story");
       console.error(err);
@@ -214,7 +218,7 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
 
   const handleMakePublic = async () => {
     if (!showPublicConfirm?.story || !userId || !accessToken) return;
-    
+
     setIsProcessing(true);
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -335,14 +339,13 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
               </div>
               <span className="text-[#2D3436] text-lg">Current tier</span>
             </div>
-            
+
             {/* Add Word Usage Display */}
             <div className="flex flex-col items-end">
-              <div className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
-                hasReachedWordLimit(userProfile.tier, userProfile.monthly_word_count)
-                  ? 'bg-gradient-to-r from-[#FF7675] to-[#FFD166] text-[#2D3436]'
-                  : 'bg-white/60 border border-white/30 text-[#2D3436]'
-              }`}>
+              <div className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${hasReachedWordLimit(userProfile.tier, userProfile.monthly_word_count)
+                ? 'bg-gradient-to-r from-[#FF7675] to-[#FFD166] text-[#2D3436]'
+                : 'bg-white/60 border border-white/30 text-[#2D3436]'
+                }`}>
                 {getWordUsageDisplay(userProfile.tier, userProfile.monthly_word_count)}
               </div>
               <span className="text-xs text-[#2D3436] mt-1">Monthly Word Usage</span>
@@ -350,29 +353,29 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
           </motion.div>
 
           {/* Upgrade Prompt - Only show if not tier 4 and limit reached */}
-          {userProfile && 
-           userProfile.tier < 4 && 
-           hasReachedWordLimit(userProfile.tier, userProfile.monthly_word_count) && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="ml-16 mt-2 mb-4 p-3 bg-gradient-to-r from-[#FFD166] to-[#FF7675] rounded-xl text-[#2D3436] max-w-2xl shadow-lg border-l-4 border-[#FF7675]"
-            >
-              <div className="flex items-start space-x-2">
-                <div className="flex-shrink-0 mt-0.5">
-                  <svg className="w-5 h-5 text-[#FF7675]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
+          {userProfile &&
+            userProfile.tier < 4 &&
+            hasReachedWordLimit(userProfile.tier, userProfile.monthly_word_count) && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="ml-16 mt-2 mb-4 p-3 bg-gradient-to-r from-[#FFD166] to-[#FF7675] rounded-xl text-[#2D3436] max-w-2xl shadow-lg border-l-4 border-[#FF7675]"
+              >
+                <div className="flex items-start space-x-2">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="w-5 h-5 text-[#FF7675]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium">Monthly word limit reached!</p>
+                    <p className="text-sm mt-1">
+                      Upgrade to a higher tier to unlock more words per month and continue creating.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">Monthly word limit reached!</p>
-                  <p className="text-sm mt-1">
-                    Upgrade to a higher tier to unlock more words per month and continue creating.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
@@ -425,7 +428,7 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
                       </h3>
                       <button
                         onClick={() =>
-                          handleDeleteStory(story.title, story.story_type)
+                          handleDeleteStory(story.title, story.story_type, story.story_id)
                         }
                         className="p-1.5 rounded-full bg-[#FF7675] text-[#FFF8F1] hover:bg-[#FFD166] transition-colors flex-shrink-0"
                         title="Delete story"
@@ -479,11 +482,10 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
                       </div>
 
                       {/* Completion Status */}
-                      <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border border-white/30 ${
-                        story.complete 
-                          ? 'bg-green-50/50 text-[#00BFA6] border-green-200/50' 
-                          : 'bg-red-50/50 text-[#FF7675] border-red-200/50'
-                      }`}>
+                      <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border border-white/30 ${story.complete
+                        ? 'bg-green-50/50 text-[#00BFA6] border-green-200/50'
+                        : 'bg-red-50/50 text-[#FF7675] border-red-200/50'
+                        }`}>
                         {story.complete ? (
                           <CheckCircle size={12} />
                         ) : (
@@ -495,13 +497,13 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
 
                     {/* Other Metadata - Compact */}
                     <div className="space-y-1 text-xs text-[#2D3436] mb-4">
-                      <p className="flex items-center justify-between">
+                      {/* <p className="flex items-center justify-between">
                         <span className="font-medium">Author:</span>
                         <span>{getModelDisplayName(story.model)}</span>
-                      </p>
+                      </p> */}
                       <p className="flex items-center justify-between">
                         <span className="font-medium">Words:</span>
-                        <span>{story.word_count.toLocaleString()}</span>
+                        <span>{story.story_word_count.toLocaleString()}</span>
                       </p>
                       <p className="flex items-center justify-between">
                         <span className="font-medium">Type:</span>
@@ -542,7 +544,7 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
             )}
           </div>
         ) : (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-20"
@@ -642,7 +644,7 @@ const hasReachedWordLimit = (tier: number, wordCount: number): boolean => {
       </AnimatePresence>
 
       <Footer />
-      
+
       {/* Add CSS for gradient animation */}
       <style jsx global>{`
         @keyframes gradient-shift {

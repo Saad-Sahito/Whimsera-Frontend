@@ -82,7 +82,7 @@ export default function Footer() {
       >
         <button className="hover:scale-110 transition-transform">
           <Image
-            src="/Icons8/icons8-instagram-50.png"
+            src="/Icons8/upscayl_png_realesrgan-x4plus-anime_4x/icons8-instagram-100.png"
             alt="Instagram"
             width={16}
             height={16}
@@ -91,7 +91,7 @@ export default function Footer() {
         </button>
         <button className="hover:scale-110 transition-transform">
           <Image
-            src="/Icons8/icons8-x-50.png"
+            src="/Icons8/upscayl_png_realesrgan-x4plus-anime_4x/icons8-x-100.png"
             alt="X"
             width={16}
             height={16}

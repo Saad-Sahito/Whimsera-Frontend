@@ -5,9 +5,9 @@ import { useEffect, useState, useRef } from "react";
 
 type Slide = { image: string; title: string; subtitle: string };
 const slides: Slide[] = [
-  { image: "/wizard-tower.jpg", title: "Turn Ideas Into Worlds", subtitle: "Turn sparks of imagination into full worlds." },
-  { image: "/forest-bg.jpg", title: "Choose Your Own Path", subtitle: "Every choice leads to a new adventure." },
-  { image: "/starry-night-bg.jpg", title: "Stories for All Ages", subtitle: "Stories for dreamers of all ages." },
+  { image: "/wizard-tower.png", title: "Turn Ideas Into Worlds", subtitle: "Turn sparks of imagination into full worlds." },
+  { image: "/forest-bg.png", title: "Choose Your Own Path", subtitle: "Every choice leads to a new adventure." },
+  { image: "/starry-night-bg.png", title: "Stories for All Ages", subtitle: "Stories for dreamers of all ages." },
 ];
 
 type Particle = {

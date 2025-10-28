@@ -55,7 +55,7 @@ export default function Login() {
     <main
       className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden"
       style={{
-        backgroundImage: "url('/download-(2).jpeg')",
+        backgroundImage: "url('/download-(2).png')",
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",

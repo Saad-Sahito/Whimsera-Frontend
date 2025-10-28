@@ -79,20 +79,20 @@ export default function About() {
         >
           Using the latest in AI technology, Whimsera acts like a digital
           storyteller — taking your ideas and weaving them into unique
-          adventures every time. Our creative models are powered by third-party
-          LLMs providers, including OpenAI, Anthropic, Meta, and Google.{" "}
-          <Link
+          adventures every time. Our creative models are powered by
+          LLMs providers, including OpenAI, Anthropic, and XAI.{" "}
+          {/* <Link
             href="/ai-docs"
             className="text-[36px] font-light font-nunito text-[#6C5CE7] hover:underline"
           >
             Read details
-          </Link>
+          </Link> */}
         </Section>
 
         {/* Who It’s For */}
         <Section
           direction="right"
-          title="Who It’s For?"
+          title="Who It's For?"
           icon="/users-(1).png"
         >
           Whimsera is for everyone, no matter your age. Whether you&apos;re a child

@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
+//import { useAuth } from "../context/AuthContext";
 
 export default function SignUp() {
-  const { setAuthenticated, accessToken } = useAuth();
+  //const { setAuthenticated, accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [formError, setFormError] = useState("");
@@ -86,7 +86,7 @@ export default function SignUp() {
     <main
       className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden"
       style={{
-        backgroundImage: "url('/download.jpeg')",
+        backgroundImage: "url('/download.png')",
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",

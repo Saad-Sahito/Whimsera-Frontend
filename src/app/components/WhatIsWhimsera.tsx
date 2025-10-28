@@ -31,7 +31,7 @@ export default function WhatIsWhimsera() {
         <p className="text-lg leading-relaxed font-nunito font-semi-bold text-gray-800">
           Whimsera is your AI-powered creative companion — a space where stories
           come alive through imagination and intelligent storytelling. Whether
-          you’re an author, gamer, or dreamer, Whimsera adapts to your
+          you&apos;re an author, gamer, or dreamer, Whimsera adapts to your
           creativity, weaving experiences shaped by your choices.
         </p>
       </div>

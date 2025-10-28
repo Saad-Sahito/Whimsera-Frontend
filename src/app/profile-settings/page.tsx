@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import NavbarRightDashboard from "../components/NavbarRightDashboard";
 import Footer from "../components/Footer";
-import { motion } from "framer-motion";
 
 interface UserProfile {
   user_id: string;
@@ -23,7 +24,15 @@ export default function ProfileSettings() {
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { userId, accessToken } = useAuth();
+  const { isAuthenticated, userId, isLoading: authLoading, accessToken } = useAuth();
+  const router = useRouter();
+  // Show loader during any processing
+  const showLoader = loading || authLoading;
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) router.push("/login");
+  }, [isAuthenticated, authLoading, router]);
 
   const genres = [
     "Fantasy",
@@ -32,7 +41,7 @@ export default function ProfileSettings() {
     "Sci-Fi",
     "Romance",
     "Adventure",
-    "Scary",
+    "Horror",
     "Suspense",
     "Slice of Life",
   ];
@@ -75,7 +84,7 @@ export default function ProfileSettings() {
         }
 
         const { status, profile }: { status: string; profile: UserProfile } = await response.json();
-        
+
         if (status === "success" && profile) {
           setNickname(profile.nickname || "");
           setAge(profile.age ? profile.age.toString() : "");
@@ -168,8 +177,42 @@ export default function ProfileSettings() {
     );
   }
 
+  // Loader Component
+  const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
+    <AnimatePresence>
+      {isLoading && (
+        <motion.div
+          className="fixed top-0 left-0 right-0 h-1 z-[1000] origin-left"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          exit={{ scaleX: 0 }}
+          transition={{
+            duration: 0.3,
+            ease: "easeOut"
+          }}
+        >
+          <div
+            className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
+            style={{
+              backgroundSize: '200% 100%',
+              animation: 'gradient-shift 1.5s ease infinite'
+            }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+  if (authLoading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
+        <TopLoader isLoading={true} />
+        Checking authentication...
+      </div>
+    );
+
   return (
     <div className="min-h-screen">
+      <TopLoader isLoading={showLoader} />
       <NavbarRightDashboard />
 
       {error && (
@@ -204,7 +247,7 @@ export default function ProfileSettings() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 
+          <h1
             className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#74C0FC] bg-clip-text text-transparent mb-3"
             style={{ fontFamily: "Fredoka, sans-serif" }}
           >
@@ -224,7 +267,7 @@ export default function ProfileSettings() {
         >
           {/* Glow Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#6C5CE7]/20 to-[#00BFA6]/20 rounded-3xl blur-xl" />
-          
+
           <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#E5E5E5]">
             <div className="space-y-8">
               {/* Basic Info Section */}
@@ -296,11 +339,10 @@ export default function ProfileSettings() {
                   {genres.map((genre) => (
                     <motion.label
                       key={genre}
-                      className={`flex items-center space-x-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                        selectedGenres.includes(genre)
+                      className={`flex items-center space-x-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedGenres.includes(genre)
                           ? "border-[#6C5CE7] bg-gradient-to-r from-[#6C5CE7]/10 to-[#00BFA6]/10 shadow-md"
                           : "border-[#E5E5E5] bg-white/50 hover:border-[#6C5CE7]/50"
-                      }`}
+                        }`}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -333,11 +375,10 @@ export default function ProfileSettings() {
                   {themes.map((theme) => (
                     <motion.label
                       key={theme}
-                      className={`flex items-center space-x-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                        selectedThemes.includes(theme)
+                      className={`flex items-center space-x-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${selectedThemes.includes(theme)
                           ? "border-[#00BFA6] bg-gradient-to-r from-[#00BFA6]/10 to-[#74C0FC]/10 shadow-md"
                           : "border-[#E5E5E5] bg-white/50 hover:border-[#00BFA6]/50"
-                      }`}
+                        }`}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >

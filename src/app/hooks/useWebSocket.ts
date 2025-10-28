@@ -1,18 +1,26 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 
 interface WebSocketMessage {
-  type: "text" | "decision" | "save" | "status" | "saved";
+  type: "text" | "decision" | "save" | "status" | "saved" | "story_complete" | "act_transition" | "act_status" | "error";
   scene_text?: string;
   question?: string;
   options?: number;
   user_choice?: string;
   chapter_complete?: boolean;
+  story_word_count?: number;
+  chapter_word_count?: number;
   word_count?: number;
   FATAL?: string;
   EXCEPTION?: string;
   message?: string;
+  current_act_id?: number;
+  total_acts?: number;
+  act_title?: string;
+  progress_percentage?: number;
+  //tokens_used?: number;
+  latest_chapter_id?: number;
+  
 }
 
 interface UseWebSocketProps {
@@ -42,7 +50,7 @@ export const useWebSocket = ({
   >("disconnected");
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { accessToken } = useAuth(); // Retrieve accessToken from AuthContext
+  const { accessToken } = useAuth();
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
@@ -88,7 +96,6 @@ export const useWebSocket = ({
     }
 
     try {
-      // Construct WebSocket URL with token query parameter
       const backendWsUrl = baseUrl || process.env.NEXT_PUBLIC_WS_BASE_URL;
       if (!backendWsUrl) {
         throw new Error("WebSocket base URL not configured");
@@ -110,13 +117,12 @@ export const useWebSocket = ({
         setIsConnected(true);
         setConnectionStatus("connected");
 
-        // Send init message as expected by backend
         const initMessage = {
           user_id: userId,
           story_id: storyId,
         };
 
-        console.log("📤 Sending init message:", initMessage);
+        console.log("� sending init message:", initMessage);
 
         if (socketRef.current?.readyState === WebSocket.OPEN) {
           socketRef.current.send(JSON.stringify(initMessage));
@@ -135,9 +141,8 @@ export const useWebSocket = ({
           console.log("📥 WebSocket message received:", message);
           onMessage?.(message);
 
-          // Auto-disconnect if chapter is complete
-          if (message.chapter_complete) {
-            console.log("✅ Chapter complete, disconnecting...");
+          if (message.type === "story_complete" || message.chapter_complete) {
+            console.log("✅ Story or chapter complete, disconnecting...");
             disconnect();
           }
         } catch (error) {
@@ -164,7 +169,6 @@ export const useWebSocket = ({
         socketRef.current = null;
         onDisconnect?.();
 
-        // Handle specific close codes
         if (event.code === 4001) {
           onError?.("Authentication failed: Missing or invalid token");
         } else if (event.code === 4003) {
@@ -212,7 +216,6 @@ export const useWebSocket = ({
   }, [sendMessage]);
 
   useEffect(() => {
-    // Capture the current value of the ref
     const timeoutId = reconnectTimeoutRef.current;
 
     return () => {

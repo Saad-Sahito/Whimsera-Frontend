@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 
@@ -13,7 +13,7 @@ const genres = [
   "Sci-Fi",
   "Romance",
   "Adventure",
-  "Scary",
+  "Horror",
   "Suspense",
   "Slice of Life",
 ];
@@ -30,14 +30,14 @@ const themes = [
 ];
 
 const tiers = [
-  { value: 1, name: "Explorer", description: "Begin your journey", icon: "🌱" },
-  { value: 1, name: "Adventurer", description: "Seek new horizons", icon: "⚔️" },
-  { value: 1, name: "Hero", description: "Face greater challenges", icon: "🛡️" },
-  { value: 1, name: "Legend", description: "Master your destiny", icon: "👑" },
-];
+  { value: 1, name: "Free", description: "Begin your journey", icon: "🌱" },
+  { value: 2, name: "Scribe", description: "Seek new horizons", icon: "⚔️" },
+]
+  
 
 export default function ProfileSetup() {
-  const { accessToken } = useAuth();
+    const { isAuthenticated, userId, isLoading: authLoading, accessToken } = useAuth();
+
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const router = useRouter();
@@ -50,6 +50,13 @@ export default function ProfileSetup() {
   const [selectedThemes, setSelectedThemes] = useState<string[]>(themes);
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
   const [nickname, setNickname] = useState("");
+  // Show loader during any processing
+  const showLoader = loading || authLoading;
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) router.push("/login");
+  }, [isAuthenticated, authLoading, router]);
 
   const toggleGenre = (genre: string) => {
     setSelectedGenres((prev) =>
@@ -62,7 +69,31 @@ export default function ProfileSetup() {
       prev.includes(theme) ? prev.filter((t) => t !== theme) : [...prev, theme]
     );
   };
-
+// Loader Component
+const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
+  <AnimatePresence>
+    {isLoading && (
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 z-[1000] origin-left"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        exit={{ scaleX: 0 }}
+        transition={{
+          duration: 0.3,
+          ease: "easeOut"
+        }}
+      >
+        <div
+          className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
+          style={{
+            backgroundSize: '200% 100%',
+            animation: 'gradient-shift 1.5s ease infinite'
+          }}
+        />
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
   const handleNext = () => {
     if (step === 1 && isParent === null) {
       setFormError("Please select an option");
@@ -185,6 +216,13 @@ export default function ProfileSetup() {
       setLoading(false);
     }
   };
+  if (authLoading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
+        <TopLoader isLoading={true} />
+        Checking authentication...
+      </div>
+    );
 
   return (
     <main
@@ -196,6 +234,7 @@ export default function ProfileSetup() {
         backgroundAttachment: "fixed",
       }}
     >
+      <TopLoader isLoading={showLoader} />
       <div className="absolute inset-0 bg-black/30 z-0" />
       
       <AnimatePresence mode="wait">

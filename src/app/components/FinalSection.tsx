@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 const IMAGES = [
-  "/download.jpg",
-  "/download-(2).jpeg",
-  "/starry-night-bg1.jpg",
-  "/bottom-CTA.jpg",
+  "/download.png",
+  "/download-(2).png",
+  "/starry-night-bg1.png",
+  "/bottom-CTA.png",
 ];
 
 export default function FinalSection() {

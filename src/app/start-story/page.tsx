@@ -7,11 +7,11 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Footer from "../components/Footer";
 interface UserProfile {
-  nickname: string;
-  tier: number;
-  no_genre: string[]; 
-  no_themes: string[]; 
-  age: number;
+    nickname: string;
+    tier: number;
+    no_genre: string[];
+    no_themes: string[];
+    age: number;
 
 }
 const genreColors: Record<string, string> = {
@@ -21,7 +21,7 @@ const genreColors: Record<string, string> = {
     "Sci-Fi": "#74C0FF",
     Romance: "#FF7675",
     Adventure: "#00CEC9",
-    Scary: "#E17055",
+    Horror: "#E17055",
     Suspense: "#0984E3",
     "Slice of Life": "#A29BFE",
 };
@@ -36,34 +36,34 @@ const GRADIENT_COLORS = [
     "rgba(116, 192, 252, 0.3)",
 ];
 
-const TIER_1_MODELS: { [key: string]: string } = {
-    "gpt-5-nano-2025-08-07": "Flicker",
+// const TIER_1_MODELS: { [key: string]: string } = {
+//     "gpt-5-nano-2025-08-07": "Flicker",
 
-    "openai/gpt-oss-120b": "Lyric",
-    "llama-3.3-70b-versatile": "Lyra"
-};
-//    "gemini-2.5-flash-lite": "Kite",
-const TIER_2_MODELS: { [key: string]: string } = {
-    "gpt-5-mini-2025-08-07": "Ember",
-    "gpt-4o-mini-2024-07-18": "Echo",
-    "gemini-2.5-flash": "Nova",
-    "claude-haiku-4-5-20251001": "Haiku"
-};
+//     "openai/gpt-oss-120b": "Lyric",
+//     "llama-3.3-70b-versatile": "Lyra"
+// };
+// //    "gemini-2.5-flash-lite": "Kite",
+// const TIER_2_MODELS: { [key: string]: string } = {
+//     "gpt-5-mini-2025-08-07": "Ember",
+//     "gpt-4o-mini-2024-07-18": "Echo",
+//     "gemini-2.5-flash": "Nova",
+//     "claude-haiku-4-5-20251001": "Haiku"
+// };
 
-const TIER_3_MODELS: { [key: string]: string } = {
-    "claude-sonnet-4-5-20250929": "Sonnet",
-    "gpt-5-2025-08-07": "Aurora",
-    "gpt-4o-2024-08-06": "Vesper",
-    "gemini-2.5-pro": "Solstice",
-    "gpt-4.1-2025-04-14": "Scribe"
-};
+// const TIER_3_MODELS: { [key: string]: string } = {
+//     "claude-sonnet-4-5-20250929": "Sonnet",
+//     "gpt-5-2025-08-07": "Aurora",
+//     "gpt-4o-2024-08-06": "Vesper",
+//     "gemini-2.5-pro": "Solstice",
+//     "gpt-4.1-2025-04-14": "Scribe"
+// };
 
-const TIER_4_MODELS: { [key: string]: string } = {
-    "claude-opus-4-1-20250805": "Opus",
-    "gpt-5-pro-2025-10-06": "Eclipse"
-};
+// const TIER_4_MODELS: { [key: string]: string } = {
+//     "claude-opus-4-1-20250805": "Opus",
+//     "gpt-5-pro-2025-10-06": "Eclipse"
+// };
 
-const ALL_GENRES = ["Fantasy", "Mystery", "Comedy", "Sci-Fi", "Romance", "Adventure", "Scary", "Suspense", "Slice of Life"];
+const ALL_GENRES = ["Fantasy", "Mystery", "Comedy", "Sci-Fi", "Romance", "Adventure", "Horror", "Suspense", "Slice of Life"];
 const ALL_THEMES = [
     "Friendship & Loyalty",
     "Love & Romance",
@@ -86,8 +86,8 @@ export default function StartStory() {
     const [title, setTitle] = useState<string>("");
     const [tone, setTone] = useState<number>(40);
     const [storyType, setStoryType] = useState<string>("interactive");
-    const [selectedAuthor, setSelectedAuthor] = useState<string>("");
-    const [selectedAuthorKey, setSelectedAuthorKey] = useState<string>("");
+    // const [selectedAuthor, setSelectedAuthor] = useState<string>("");
+    // const [selectedAuthorKey, setSelectedAuthorKey] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [mounted, setMounted] = useState<boolean>(false);
@@ -96,13 +96,13 @@ export default function StartStory() {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [availableGenres, setAvailableGenres] = useState<string[]>(ALL_GENRES);
     const [availableThemes, setAvailableThemes] = useState<string[]>(ALL_THEMES);
-    const [availableModels, setAvailableModels] = useState<{ [key: string]: string }>({});
+    //const [availableModels, setAvailableModels] = useState<{ [key: string]: string }>({});
 
     // --- Popup States ---
     const [showStoryTypePopup, setShowStoryTypePopup] = useState<boolean>(false);
-    const [showAuthorPopup, setShowAuthorPopup] = useState<boolean>(false);
-    const [recommendedAuthor, setRecommendedAuthor] = useState<string>("");
-    const [isLoadingSuggestion, setIsLoadingSuggestion] = useState<boolean>(false);
+    // const [showAuthorPopup, setShowAuthorPopup] = useState<boolean>(false);
+    // const [recommendedAuthor, setRecommendedAuthor] = useState<string>("");
+    // const [isLoadingSuggestion, setIsLoadingSuggestion] = useState<boolean>(false);
     const [isLoadingTitle, setIsLoadingTitle] = useState<boolean>(false);
 
     // --- Cursor State ---
@@ -116,9 +116,39 @@ export default function StartStory() {
     const lastColorChangeTime = useRef(Date.now());
 
     // --- Auth and Router ---
-    const { userId, accessToken } = useAuth();
+    const { isAuthenticated, userId, accessToken, isLoading: authLoading, } = useAuth();
     const router = useRouter();
+    const showLoader = authLoading;
 
+    useEffect(() => {
+        if (authLoading) return;
+        if (!isAuthenticated) router.push("/login");
+    }, [isAuthenticated, authLoading, router]);
+    // Loader Component
+    const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
+        <AnimatePresence>
+            {isLoading && (
+                <motion.div
+                    className="fixed top-0 left-0 right-0 h-1 z-[1000] origin-left"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    exit={{ scaleX: 0 }}
+                    transition={{
+                        duration: 0.3,
+                        ease: "easeOut"
+                    }}
+                >
+                    <div
+                        className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
+                        style={{
+                            backgroundSize: '200% 100%',
+                            animation: 'gradient-shift 1.5s ease infinite'
+                        }}
+                    />
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
     // --- Fetch User Profile ---
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -143,11 +173,11 @@ export default function StartStory() {
                         setAvailableThemes(ALL_THEMES.filter(t => !noThemesList.includes(t)));
 
                         // Set available models based on tier
-                        const tier = data.profile.tier || 1;
-                        if (tier === 1) setAvailableModels(TIER_1_MODELS);
-                        else if (tier === 2) setAvailableModels(TIER_2_MODELS);
-                        else if (tier === 3) setAvailableModels(TIER_3_MODELS);
-                        else if (tier === 4) setAvailableModels(TIER_4_MODELS);
+                        // const tier = data.profile.tier || 0;
+                        // if (tier === 1) setAvailableModels(TIER_1_MODELS);
+                        // else if (tier === 2) setAvailableModels(TIER_2_MODELS);
+                        // else if (tier === 3) setAvailableModels(TIER_3_MODELS);
+                        // else if (tier === 4) setAvailableModels(TIER_4_MODELS);
                     }
                 }
             } catch (error) {
@@ -171,7 +201,7 @@ export default function StartStory() {
         story_id: null,
         "Guide Prose": selectedVoice ? [selectedVoice] : [],
         "Additional Themes": selectedThemes,
-        age: userProfile?.age || null,
+        target_audience_age: userProfile?.age || null,
     });
 
     // --- Mouse Movement ---
@@ -260,6 +290,7 @@ export default function StartStory() {
         setIsLoadingTitle(true);
         try {
             const initialData = getInitialStoryData();
+            console.log(initialData)
             const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
             const response = await fetch(`${backendUrl}/utility/title_generator`, {
                 method: "POST",
@@ -284,36 +315,36 @@ export default function StartStory() {
     };
 
     // --- Get Author Suggestion ---
-    const getAuthorSuggestion = async () => {
-        setIsLoadingSuggestion(true);
-        try {
-            const initialData = getInitialStoryData();
-            const tier = userProfile?.tier || 1;
-            const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-            const response = await fetch(`${backendUrl}/utility/model_suggestor?tier=${tier}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({ initial_story_data: initialData }),
-            });
+    // const getAuthorSuggestion = async () => {
+    //     setIsLoadingSuggestion(true);
+    //     try {
+    //         const initialData = getInitialStoryData();
+    //         const tier = userProfile?.tier || 1;
+    //         const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    //         const response = await fetch(`${backendUrl}/utility/model_suggestor?tier=${tier}`, {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 Authorization: `Bearer ${accessToken}`,
+    //             },
+    //             body: JSON.stringify({ initial_story_data: initialData }),
+    //         });
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.status === "success") {
-                    setRecommendedAuthor(data.data);
-                    // Auto-select the recommended author
-                    setSelectedAuthorKey(data.data);
-                    setSelectedAuthor(availableModels[data.data]);
-                }
-            }
-        } catch (error) {
-            console.error("Error getting author suggestion:", error);
-        } finally {
-            setIsLoadingSuggestion(false);
-        }
-    };
+    //         if (response.ok) {
+    //             const data = await response.json();
+    //             if (data.status === "success") {
+    //                 setRecommendedAuthor(data.data);
+    //                 // Auto-select the recommended author
+    //                 setSelectedAuthorKey(data.data);
+    //                 setSelectedAuthor(availableModels[data.data]);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error("Error getting author suggestion:", error);
+    //     } finally {
+    //         setIsLoadingSuggestion(false);
+    //     }
+    // };
 
     // --- Handle Begin Adventure ---
     const handleBeginAdventure = async () => {
@@ -322,11 +353,11 @@ export default function StartStory() {
             return;
         }
 
-        if (!selectedAuthorKey || typeof selectedAuthorKey !== "string" || selectedAuthorKey === "") {
-            console.error("Invalid selectedAuthorKey:", selectedAuthorKey);
-            setError("Please select a valid Author to guide your story.");
-            return;
-        }
+        // if (!selectedAuthorKey || typeof selectedAuthorKey !== "string" || selectedAuthorKey === "") {
+        //     console.error("Invalid selectedAuthorKey:", selectedAuthorKey);
+        //     setError("Please select a valid Author to guide your story.");
+        //     return;
+        // }
 
         setIsLoading(true);
         setError(null);
@@ -336,7 +367,7 @@ export default function StartStory() {
             const queryParams = new URLSearchParams({
                 user_id: userId,
                 story_type: storyType,
-                story_title: title || "", // Ensure story_title is not undefined
+                story_title: title || "Untitled Story", // Ensure story_title is not undefined
             });
             console.log("Sending initialize_story request with query:", queryParams.toString());
 
@@ -378,10 +409,10 @@ export default function StartStory() {
                 ...getInitialStoryData(),
                 story_id: initData.story_id, // Update story_id with the value from initData
             };
-            console.log("selectedAuthorKey before premise request:", selectedAuthorKey);
+            //console.log("selectedAuthorKey before premise request:", selectedAuthorKey);
             const premiseRequestBody = {
                 initial_story_data: initialStoryData,
-                model: selectedAuthorKey,
+                model: "None",
             };
             console.log("Sending create_premise request:", JSON.stringify(premiseRequestBody, null, 2));
 
@@ -438,9 +469,17 @@ export default function StartStory() {
     const floatingAnimation: Variants = {
         animate: { y: [0, -10, 0], transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } },
     };
+    if (authLoading)
+        return (
+            <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
+                <TopLoader isLoading={true} />
+                Checking authentication...
+            </div>
+        );
 
     return (
         <main className="min-h-screen flex flex-col">
+            <TopLoader isLoading={showLoader} />
             <NavbarRightDashboard />
             <div className="min-h-screen text-[#2D3436] pb-20 py-18 relative px-4 sm:px-6 lg:px-8">
 
@@ -578,7 +617,7 @@ export default function StartStory() {
                 </AnimatePresence>
 
                 {/* --- Author Popup --- */}
-                <AnimatePresence>
+                {/* <AnimatePresence>
                     {showAuthorPopup && (
                         <motion.div
                             className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 px-4"
@@ -652,7 +691,7 @@ export default function StartStory() {
                             </motion.div>
                         </motion.div>
                     )}
-                </AnimatePresence>
+                </AnimatePresence> */}
 
                 {/* --- Page Header --- */}
                 <motion.div
@@ -1121,7 +1160,7 @@ export default function StartStory() {
                 </motion.section>
 
                 {/* CHAPTER 4 - Author Selection */}
-                <motion.section
+                {/* <motion.section
                     className="max-w-5xl mx-auto mt-12 sm:mt-16 md:mt-20 px-4 mb-10"
                     variants={containerVariants}
                     initial="hidden"
@@ -1191,7 +1230,7 @@ export default function StartStory() {
                             </div>
                         </div>
                     </div>
-                </motion.section>
+                </motion.section> */}
 
                 <motion.div
                     className="text-center mt-12 sm:mt-16 px-4 mb-16 sm:mb-20"
@@ -1201,13 +1240,13 @@ export default function StartStory() {
                     viewport={{ once: true }}
                 >
                     <motion.button
-                        className={`px-8 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#00BFA6] text-white text-lg sm:text-2xl font-bold rounded-full shadow-2xl border-4 border-white ${!selectedAuthorKey ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`px-8 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#00BFA6] text-white text-lg sm:text-2xl font-bold rounded-full shadow-2xl border-4 border-white`}
                         style={{ fontFamily: "Fredoka, sans-serif" }}
-                        whileHover={selectedAuthorKey ? { scale: 1.05, boxShadow: "0 20px 60px rgba(108, 92, 231, 0.4)" } : {}}
-                        whileTap={selectedAuthorKey ? { scale: 0.95 } : {}}
+                        //whileHover={selectedAuthorKey ? { scale: 1.05, boxShadow: "0 20px 60px rgba(108, 92, 231, 0.4)" } : {}}
+                        //whileTap={selectedAuthorKey ? { scale: 0.95 } : {}}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                         onClick={handleBeginAdventure}
-                        disabled={!selectedAuthorKey || isLoading}
+                    //disabled={!selectedAuthorKey || isLoading}
                     >
                         🌟 Begin Your Adventure 🌟
                     </motion.button>
