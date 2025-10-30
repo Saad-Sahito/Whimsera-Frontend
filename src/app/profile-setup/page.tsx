@@ -6,51 +6,22 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 
-const genres = [
-  "Fantasy",
-  "Mystery",
-  "Comedy",
-  "Sci-Fi",
-  "Romance",
-  "Adventure",
-  "Horror",
-  "Suspense",
-  "Slice of Life",
-];
-
-const themes = [
-  "Friendship & Loyalty",
-  "Love & Romance",
-  "Mystery & Secrets",
-  "Adventure & Exploration",
-  "Betrayal & Revenge",
-  "Courage & Heroism",
-  "Loss & Redemption",
-  "Comedy & Humor",
-];
-
 const tiers = [
-  { value: 1, name: "Free", description: "Begin your journey", icon: "🌱" },
-  { value: 2, name: "Scribe", description: "Seek new horizons", icon: "⚔️" },
-]
-  
+  { value: 1, name: "Free", description: "Begin your journey", icon: "Seedling" },
+  { value: 2, name: "Scribe", description: "Seek new horizons", icon: "Sword" },
+];
 
 export default function ProfileSetup() {
-    const { isAuthenticated, userId, isLoading: authLoading, accessToken } = useAuth();
-
+  const { isAuthenticated, userId, isLoading: authLoading, accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const router = useRouter();
 
   const [step, setStep] = useState(1);
-  const [isParent, setIsParent] = useState<boolean | null>(null);
-  const [childAge, setChildAge] = useState("");
-  const [userAge, setUserAge] = useState("");
-  const [selectedGenres, setSelectedGenres] = useState<string[]>(genres);
-  const [selectedThemes, setSelectedThemes] = useState<string[]>(themes);
-  const [selectedTier, setSelectedTier] = useState<number | null>(null);
   const [nickname, setNickname] = useState("");
-  // Show loader during any processing
+  const [age, setAge] = useState("");
+  const [selectedTier, setSelectedTier] = useState<number | null>(null);
+
   const showLoader = loading || authLoading;
 
   useEffect(() => {
@@ -58,58 +29,42 @@ export default function ProfileSetup() {
     if (!isAuthenticated) router.push("/login");
   }, [isAuthenticated, authLoading, router]);
 
-  const toggleGenre = (genre: string) => {
-    setSelectedGenres((prev) =>
-      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
-    );
-  };
-
-  const toggleTheme = (theme: string) => {
-    setSelectedThemes((prev) =>
-      prev.includes(theme) ? prev.filter((t) => t !== theme) : [...prev, theme]
-    );
-  };
-// Loader Component
-const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
-  <AnimatePresence>
-    {isLoading && (
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 z-[1000] origin-left"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        exit={{ scaleX: 0 }}
-        transition={{
-          duration: 0.3,
-          ease: "easeOut"
-        }}
-      >
-        <div
-          className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
-          style={{
-            backgroundSize: '200% 100%',
-            animation: 'gradient-shift 1.5s ease infinite'
+  // Loader Component
+  const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
+    <AnimatePresence>
+      {isLoading && (
+        <motion.div
+          className="fixed top-0 left-0 right-0 h-1 z-[1000] origin-left"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          exit={{ scaleX: 0 }}
+          transition={{
+            duration: 0.3,
+            ease: "easeOut",
           }}
-        />
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
+        >
+          <div
+            className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
+            style={{
+              backgroundSize: "200% 100%",
+              animation: "gradient-shift 1.5s ease infinite",
+            }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
   const handleNext = () => {
-    if (step === 1 && isParent === null) {
-      setFormError("Please select an option");
-      return;
-    }
-    if (step === 2 && isParent && !childAge) {
-      setFormError("Please enter your child's age");
-      return;
-    }
-    if (step === 2 && !isParent && !userAge) {
-      setFormError("Please enter your age");
-      return;
-    }
-    if (step === 2 && !nickname) {
-      setFormError("Please enter a nickname");
-      return;
+    if (step === 1) {
+      if (!nickname.trim()) {
+        setFormError("Please enter a nickname");
+        return;
+      }
+      if (!age || isNaN(Number(age)) || Number(age) < 13) {
+        setFormError("Please enter a valid age (13 or older)");
+        return;
+      }
     }
     setFormError("");
     setStep((prev) => prev + 1);
@@ -126,38 +81,24 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
       return;
     }
 
-    if (!nickname) {
-      setFormError("Please enter a nickname");
-      return;
-    }
-
-    const age = isParent ? parseInt(childAge) : parseInt(userAge);
-    if (!age) {
-      setFormError("Please provide a valid age");
-      return;
-    }
-
     setFormError("");
     setLoading(true);
 
     try {
-      console.log("Sending request to /api/register-with-tag with accessToken:", accessToken);
-
-      // Call Supabase /api/register-with-tag (without user_tag)
+      // Step 1: Register with Supabase via /api/register-with-tag
       const resp = await fetch("/api/register-with-tag", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ nickname, age }),
+        body: JSON.stringify({ nickname, age: parseInt(age) }),
       });
 
       const json = await resp.json();
-      console.log("Response from /api/register-with-tag:", json);
 
       if (!resp.ok) {
-        if (json.error.includes("Unauthorized")) {
+        if (json.error?.includes("Unauthorized")) {
           setFormError("Authentication failed. Please log in again.");
           router.push("/login");
         } else {
@@ -169,53 +110,40 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
 
       const newUserId = json.userId || json.id;
 
-      // Calculate no_genre and no_themes (genres/themes NOT selected)
-      const no_genre = isParent ? genres.filter((g) => !selectedGenres.includes(g)) : [];
-      const no_themes = isParent ? themes.filter((t) => !selectedThemes.includes(t)) : [];
+      // Step 2: Register with FastAPI backend
+      const payload = {
+        nickname,
+        age: parseInt(age),
+        tier: selectedTier,
+        stories: [],
+        user_id: newUserId,
+      };
 
-      // Call FastAPI /users
-      try {
-        const payload = {
-          nickname,
-          age,
-          tier: selectedTier,
-          no_genre,
-          no_themes,
-          stories: [],
-          user_id: newUserId,
-        };
-        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        console.log("Sending request to FastAPI /users:", payload);
-        const backendResp = await fetch(`${backendUrl}/users`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(payload),
-        });
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const backendResp = await fetch(`${backendUrl}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-        if (!backendResp.ok) {
-          console.error("FastAPI response:", await backendResp.text());
-          setFormError("Profile setup succeeded but backend registration failed.");
-          setLoading(false);
-          return;
-        }
-
-        console.log("FastAPI registration successful");
-        router.push("/dashboard");
-      } catch (err) {
-        console.error("🔥 Backend request failed:", err);
-        setFormError("Profile setup succeeded but backend registration failed. Please contact support.");
+      if (!backendResp.ok) {
+        console.error("FastAPI error:", await backendResp.text());
+        setFormError("Backend registration failed. Please contact support.");
         setLoading(false);
         return;
       }
+
+      router.push("/dashboard");
     } catch (error) {
-      console.error("🔥 Error in profile setup:", error);
+      console.error("Profile setup error:", error);
       setFormError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
   };
+
   if (authLoading)
     return (
       <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
@@ -236,7 +164,7 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
     >
       <TopLoader isLoading={showLoader} />
       <div className="absolute inset-0 bg-black/30 z-0" />
-      
+
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -270,60 +198,11 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
             </motion.p>
           )}
 
-          {/* Step 1: Parent or User */}
+          {/* Step 1: Nickname & Age */}
           {step === 1 && (
             <div className="w-full flex flex-col items-center space-y-6">
               <h2 className="text-3xl font-bold text-white text-center">
-                Are you a parent setting up for your child?
-              </h2>
-              <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setIsParent(true);
-                    setFormError("");
-                  }}
-                  className={`flex-1 py-6 px-8 rounded-2xl text-xl font-semibold transition-all duration-300 ${
-                    isParent === true
-                      ? "bg-gradient-to-r from-[#FFD166] to-[#FF7675] text-[#2D3436] shadow-2xl"
-                      : "bg-white/20 text-white hover:bg-white/30"
-                  }`}
-                >
-                  👨‍👩‍👧‍👦 Yes, I&apos;m a parent
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setIsParent(false);
-                    setFormError("");
-                  }}
-                  className={`flex-1 py-6 px-8 rounded-2xl text-xl font-semibold transition-all duration-300 ${
-                    isParent === false
-                      ? "bg-gradient-to-r from-[#FFD166] to-[#FF7675] text-[#2D3436] shadow-2xl"
-                      : "bg-white/20 text-white hover:bg-white/30"
-                  }`}
-                >
-                  ✨ No, it&apos;s for me
-                </motion.button>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleNext}
-                className="w-full max-w-md bg-gradient-to-r from-[#00BFA6] to-[#74C0FC] text-white py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300"
-              >
-                Next →
-              </motion.button>
-            </div>
-          )}
-
-          {/* Step 2: Age and Nickname */}
-          {step === 2 && (
-            <div className="w-full flex flex-col items-center space-y-6">
-              <h2 className="text-3xl font-bold text-white text-center">
-                {isParent ? "Tell us about your child" : "Tell us about yourself"}
+                Welcome! Let’s set up your profile
               </h2>
               <div className="w-full max-w-md space-y-4">
                 <div className="flex flex-col text-left">
@@ -332,132 +211,35 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
                     type="text"
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
-                    placeholder="Enter a nickname (e.g., Luna)"
+                    placeholder="e.g., Luna, Alex, Sage"
                     className="px-4 py-3 rounded-xl border-2 border-white/50 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FFD166] text-lg backdrop-blur-sm"
-                    required
                   />
                 </div>
                 <div className="flex flex-col text-left">
-                  <label className="text-lg mb-2 text-white font-semibold">
-                    {isParent ? "Child's Age" : "Your Age"}
-                  </label>
+                  <label className="text-lg mb-2 text-white font-semibold">Your Age</label>
                   <input
                     type="number"
-                    value={isParent ? childAge : userAge}
-                    onChange={(e) => (isParent ? setChildAge(e.target.value) : setUserAge(e.target.value))}
-                    placeholder="Enter age"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    placeholder="13 or older"
                     className="px-4 py-3 rounded-xl border-2 border-white/50 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FFD166] text-lg backdrop-blur-sm"
-                    required
+                    min="13"
                   />
                 </div>
               </div>
-              <div className="flex gap-3 w-full max-w-md">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBack}
-                  className="flex-1 bg-white/20 text-white py-4 rounded-xl text-xl font-semibold hover:bg-white/30 transition-all duration-300"
-                >
-                  ← Back
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleNext}
-                  className="flex-1 bg-gradient-to-r from-[#00BFA6] to-[#74C0FC] text-white py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300"
-                >
-                  {isParent ? "Next →" : "Choose Tier →"}
-                </motion.button>
-              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleNext}
+                className="w-full max-w-md bg-gradient-to-r from-[#00BFA6] to-[#74C0FC] text-white py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300"
+              >
+                Next
+              </motion.button>
             </div>
           )}
 
-          {/* Step 3: Genre Selection (Parents only) */}
-          {step === 3 && isParent && (
-            <div className="w-full flex flex-col items-center space-y-6">
-              <h2 className="text-3xl font-bold text-white text-center">Select which genres to allow</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full max-w-2xl">
-                {genres.map((genre) => (
-                  <motion.button
-                    key={genre}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => toggleGenre(genre)}
-                    className={`py-3 px-4 rounded-xl text-base font-semibold transition-all duration-300 ${
-                      selectedGenres.includes(genre)
-                        ? "bg-gradient-to-r from-[#FFD166] to-[#FF7675] text-[#2D3436] shadow-lg"
-                        : "bg-white/20 text-white hover:bg-white/30"
-                    }`}
-                  >
-                    {genre}
-                  </motion.button>
-                ))}
-              </div>
-              <div className="flex gap-3 w-full max-w-md">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBack}
-                  className="flex-1 bg-white/20 text-white py-4 rounded-xl text-xl font-semibold hover:bg-white/30 transition-all duration-300"
-                >
-                  ← Back
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleNext}
-                  className="flex-1 bg-gradient-to-r from-[#00BFA6] to-[#74C0FC] text-white py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300"
-                >
-                  Next →
-                </motion.button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Theme Selection (Parents only) */}
-          {step === 4 && isParent && (
-            <div className="w-full flex flex-col items-center space-y-6">
-              <h2 className="text-3xl font-bold text-white text-center">Select which themes to allow</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
-                {themes.map((theme) => (
-                  <motion.button
-                    key={theme}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => toggleTheme(theme)}
-                    className={`py-3 px-4 rounded-xl text-base font-semibold transition-all duration-300 ${
-                      selectedThemes.includes(theme)
-                        ? "bg-gradient-to-r from-[#FFD166] to-[#FF7675] text-[#2D3436] shadow-lg"
-                        : "bg-white/20 text-white hover:bg-white/30"
-                    }`}
-                  >
-                    {theme}
-                  </motion.button>
-                ))}
-              </div>
-              <div className="flex gap-3 w-full max-w-md">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBack}
-                  className="flex-1 bg-white/20 text-white py-4 rounded-xl text-xl font-semibold hover:bg-white/30 transition-all duration-300"
-                >
-                  ← Back
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleNext}
-                  className="flex-1 bg-gradient-to-r from-[#00BFA6] to-[#74C0FC] text-white py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300"
-                >
-                  Next →
-                </motion.button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5 (or 3 for non-parents): Tier Selection */}
-          {((step === 5 && isParent) || (step === 3 && !isParent)) && (
+          {/* Step 2: Choose Tier */}
+          {step === 2 && (
             <div className="w-full flex flex-col items-center space-y-6">
               <h2 className="text-3xl font-bold text-white text-center">Choose your adventure tier</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
@@ -491,7 +273,7 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
                   onClick={handleBack}
                   className="flex-1 bg-white/20 text-white py-4 rounded-xl text-xl font-semibold hover:bg-white/30 transition-all duration-300"
                 >
-                  ← Back
+                  Back
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -500,7 +282,7 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
                   disabled={loading || !selectedTier}
                   className="flex-1 bg-gradient-to-r from-[#FFD166] to-[#FF7675] text-[#2D3436] py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Creating Magic..." : "Complete Setup ✨"}
+                  {loading ? "Creating Magic..." : "Complete Setup"}
                 </motion.button>
               </div>
             </div>

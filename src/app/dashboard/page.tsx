@@ -20,6 +20,7 @@ interface Story {
   image_data: string | null;
   public: boolean;
   complete: boolean;
+  story_progress: number;
 }
 
 interface UserProfile {
@@ -497,10 +498,15 @@ export default function Dashboard() {
 
                     {/* Other Metadata - Compact */}
                     <div className="space-y-1 text-xs text-[#2D3436] mb-4">
-                      {/* <p className="flex items-center justify-between">
-                        <span className="font-medium">Author:</span>
-                        <span>{getModelDisplayName(story.model)}</span>
-                      </p> */}
+                      {!story.complete && (
+                        <p className="flex items-center justify-between">
+                          <span className="font-medium">Completion:</span>
+                          <span className="flex items-center gap-0.5">
+                            <span>{story.story_progress.toLocaleString()}</span>
+                            <span className="font-medium">%</span>
+                          </span>
+                        </p>
+                      )}
                       <p className="flex items-center justify-between">
                         <span className="font-medium">Words:</span>
                         <span>{story.story_word_count.toLocaleString()}</span>
