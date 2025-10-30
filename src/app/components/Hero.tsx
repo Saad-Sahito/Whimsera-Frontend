@@ -1,173 +1,190 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { Sparkles, BookOpen, Wand2 } from "lucide-react";
 
-type Slide = { image: string; title: string; subtitle: string };
-const slides: Slide[] = [
-  { image: "/wizard-tower.png", title: "Turn Ideas Into Worlds", subtitle: "Turn sparks of imagination into full worlds." },
-  { image: "/forest-bg.png", title: "Choose Your Own Path", subtitle: "Every choice leads to a new adventure." },
-  { image: "/starry-night-bg.png", title: "Stories for All Ages", subtitle: "Stories for dreamers of all ages." },
-];
+export default function HeroRedesign() {
+  const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
 
-type Particle = {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  duration: number;
-  delay: number;
-};
-
-type ColorRipple = {
-  id: number;
-  x: number;
-  y: number;
-};
-
-export default function Hero() {
-  const [index, setIndex] = useState(0);
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [colorRipples, setColorRipples] = useState<ColorRipple[]>([]);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const particleCounter = useRef(0);
-  const rippleCounter = useRef(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => setIndex((prev) => (prev + 1) % slides.length), 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const colors = [
-    "rgba(108,92,231,0.8)", // Purple
-    "rgba(255,118,117,0.8)", // Coral
-    "rgba(255,209,102,0.8)", // Yellow
-    "rgba(0,191,166,0.8)", // Teal
-    "rgba(255,107,237,0.8)", // Pink
+  const features = [
+    { icon: Sparkles, text: "AI-Powered Stories" },
+    { icon: BookOpen, text: "Your Choices Matter" },
+    { icon: Wand2, text: "Endless Adventures" }
   ];
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Create color ripples like navbar
-    const rippleId = Date.now() + rippleCounter.current++;
-    setColorRipples((prev) => [...prev, { id: rippleId, x, y }]);
-
-    setTimeout(() => {
-      setColorRipples((prev) => prev.filter((r) => r.id !== rippleId));
-    }, 1500); // Match duration
-
-    // Create magical particles
-    if (Math.random() > 0.7) {
-      const uniqueId = Date.now() + particleCounter.current++;
-      const newParticle: Particle = {
-        id: uniqueId,
-        x,
-        y,
-        size: Math.random() * 8 + 4,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        duration: Math.random() * 2 + 1,
-        delay: 0,
-      };
-      setParticles((prev) => [...prev, newParticle]);
-
-      setTimeout(() => {
-        setParticles((prev) => prev.filter((p) => p.id !== uniqueId));
-      }, (newParticle.duration + newParticle.delay) * 1000);
-    }
-  };
-
   return (
-    <div
-      ref={heroRef}
-      onMouseMove={handleMouseMove}
-      className="relative w-full h-[80vh] overflow-hidden flex items-center justify-center text-center"
-      style={{ position: "relative", zIndex: 0 }}
-    >
-      {/* Carousel */}
-      <motion.div className="flex h-full w-full" animate={{ x: `-${index * 100}%` }} transition={{ type: "tween", duration: 0.8, ease: "easeInOut" }}>
-        {slides.map((slide, i) => (
-          <div
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#FFF8F1] via-[#E5E5E5]/30 to-[#74C0FC]/10">
+      
+      {/* Subtle animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
             key={i}
-            className="relative flex-shrink-0 w-full h-full flex items-center justify-center"
-            style={{ backgroundImage: `url(${slide.image})`, backgroundSize: "cover", backgroundPosition: "center" }}
-          >
-            <div className="bg-black/40 absolute inset-0" />
-            <div className="relative z-10 px-6">
-              <h1 className="text-[66px] font-bold mb-4 text-white" style={{ fontFamily: "var(--font-fredoka)" }}>
-                {slide.title}
-              </h1>
-              <p className="text-[32px] font-medium text-white" style={{ fontFamily: "var(--font-nunito)" }}>
-                {slide.subtitle}
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 200 + 50,
+              height: Math.random() * 200 + 50,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              background: [
+                "rgba(108,92,231,0.03)",
+                "rgba(0,191,166,0.03)",
+                "rgba(255,209,102,0.03)"
+              ][i % 3],
+              filter: "blur(40px)"
+            }}
+            animate={{
+              y: [0, -30, 0],
+              x: [0, 20, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{
+              duration: 15 + Math.random() * 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: Math.random() * 5
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Main content */}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
+        
+        {/* Eyebrow text */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#6C5CE7]/10 to-[#00BFA6]/10 border border-[#6C5CE7]/20 mb-6"
+        >
+          <Sparkles className="w-4 h-4 text-[#6C5CE7]" />
+          <span className="text-sm font-medium text-[#2D3436]">
+            Where Imagination Comes to Life
+          </span>
+        </motion.div>
+
+        {/* Main headline - shorter and punchier */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-5xl md:text-7xl font-bold text-[#2D3436] mb-6 leading-tight"
+          style={{ fontFamily: "var(--font-fredoka)" }}
+        >
+          Your Story,
+          <br />
+          <span className="bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] bg-clip-text text-transparent">
+            Your Adventure
+          </span>
+        </motion.h1>
+
+        {/* Subheadline */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-xl md:text-2xl text-[#2D3436]/70 mb-12 max-w-2xl mx-auto"
+          style={{ fontFamily: "var(--font-nunito)" }}
+        >
+          Create interactive stories powered by AI. Every choice shapes your unique tale.
+        </motion.p>
+
+        {/* CTA Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+        >
+          <button className="group relative px-8 py-4 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <span className="relative z-10">Start Creating Free</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00BFA6] to-[#6C5CE7] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </button>
+          
+          <button className="px-8 py-4 border-2 border-[#6C5CE7] text-[#6C5CE7] rounded-full font-semibold text-lg hover:bg-[#6C5CE7] hover:text-white transition-all duration-300">
+            See How It Works
+          </button>
+        </motion.div>
+
+        {/* Feature pills */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="flex flex-wrap justify-center gap-4"
+        >
+          {features.map((feature, i) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                key={i}
+                onHoverStart={() => setHoveredFeature(i)}
+                onHoverEnd={() => setHoveredFeature(null)}
+                className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-[#E5E5E5] cursor-default shadow-sm"
+                whileHover={{ scale: 1.05, y: -2 }}
+              >
+                <Icon 
+                  className="w-5 h-5 transition-colors duration-300"
+                  style={{ 
+                    color: hoveredFeature === i ? "#6C5CE7" : "#2D3436"
+                  }}
+                />
+                <span className="text-sm font-medium text-[#2D3436]">
+                  {feature.text}
+                </span>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* Floating story preview card */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 1 }}
+          className="mt-16 max-w-3xl mx-auto"
+        >
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 border border-[#E5E5E5]">
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#6C5CE7]/20 via-[#00BFA6]/20 to-[#FFD166]/20 rounded-2xl blur-lg opacity-50" />
+            
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6C5CE7] to-[#00BFA6] flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#2D3436]">The Enchanted Forest</h3>
+                  <p className="text-sm text-[#2D3436]/60">Adventure • Fantasy</p>
+                </div>
+              </div>
+              
+              <p className="text-[#2D3436]/80 text-left leading-relaxed">
+                You stand at the edge of a mysterious forest. Ancient trees whisper secrets in the wind. 
+                <span className="text-[#6C5CE7] font-medium"> What do you do?</span>
               </p>
+              
+              <div className="flex gap-3 mt-4">
+                <div className="flex-1 p-3 bg-[#FFF8F1] rounded-lg border border-[#E5E5E5] text-sm text-[#2D3436]/70 hover:border-[#6C5CE7] transition-colors cursor-pointer">
+                  🗡️ Enter boldly
+                </div>
+                <div className="flex-1 p-3 bg-[#FFF8F1] rounded-lg border border-[#E5E5E5] text-sm text-[#2D3436]/70 hover:border-[#6C5CE7] transition-colors cursor-pointer">
+                  👀 Observe quietly
+                </div>
+              </div>
             </div>
           </div>
-        ))}
-      </motion.div>
-
-      {/* Color ripple effects layer */}
-      <div className="absolute inset-0 pointer-events-none z-20 overflow-visible">
-        {/* Color gradient ripples */}
-        <AnimatePresence>
-          {colorRipples.map((ripple) => (
-            <motion.div
-              key={ripple.id}
-              initial={{ opacity: 0.4, scale: 0.6 }}
-              animate={{ opacity: 0, scale: 2.5 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              className="absolute rounded-full"
-              style={{
-                width: 120,
-                height: 120,
-                left: ripple.x - 60,
-                top: ripple.y - 60,
-                background:
-                  "radial-gradient(circle, rgba(108,92,231,0.4) 0%, rgba(0,191,166,0.4) 40%, transparent 70%)",
-                pointerEvents: "none",
-                mixBlendMode: "overlay",
-              }}
-            />
-          ))}
-        </AnimatePresence>
-
-        {/* Magical floating particles */}
-        <AnimatePresence>
-          {particles.map((particle) => (
-            <motion.div
-              key={particle.id}
-              initial={{ opacity: 0, scale: 0, y: 0 }}
-              animate={{ 
-                opacity: [0, 1, 0],
-                scale: [0, 1, 0.5],
-                y: -100,
-                x: [0, Math.random() * 40 - 20, Math.random() * 60 - 30],
-                rotate: Math.random() * 360,
-              }}
-              exit={{ opacity: 0 }}
-              transition={{ 
-                duration: particle.duration,
-                delay: particle.delay,
-                ease: "easeOut"
-              }}
-              className="absolute"
-              style={{
-                left: particle.x,
-                top: particle.y,
-                width: particle.size,
-                height: particle.size,
-                borderRadius: Math.random() > 0.5 ? "50%" : "30%",
-                background: particle.color,
-                transform: "translate(-50%, -50%)",
-                boxShadow: `0 0 ${particle.size * 2}px ${particle.color}`,
-              }}
-            />
-          ))}
-        </AnimatePresence>
+        </motion.div>
       </div>
-    </div>
+
+      {/* Bottom wave transition */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 50 Q360 0 720 50 T1440 50 V120 H0 V50Z" fill="white" />
+        </svg>
+      </div>
+    </section>
   );
 }

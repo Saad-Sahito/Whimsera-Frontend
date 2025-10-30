@@ -5,28 +5,14 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function HowItWorks() {
-  const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { amount: 0.2 });
-
-  const toggleFlip = (index: number) => {
-    setFlippedCards((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
-  };
-
-  // Reset flipped cards when section goes out of view
-  useEffect(() => {
-    if (!isInView) {
-      setFlippedCards([]);
-    }
-  }, [isInView]);
 
   const steps = [
     {
       title: "Choose Your Seed",
       description:
-        "Pick a title, setting, and hero to spark your adventure. Let your imagination bloom like a magical seed ready to grow into a wondrous world.",
+        "Pick a title, setting, and hero to spark your adventure. Your imagination is the only limit.",
       image: "/scroll1.png",
       gradient: "linear-gradient(135deg, rgba(255,118,117,0.85), rgba(255,209,102,0.85))",
       stepColor: "#FF7675",
@@ -35,7 +21,7 @@ export default function HowItWorks() {
     {
       title: "Watch AI Spin the Tale",
       description:
-        "Our AI transforms your spark of creativity into an immersive, interactive story. Watch as the narrative unfolds with twists, turns, and adventure!",
+        "Watch as our AI transforms your idea into an immersive, interactive story with endless possibilities.",
       image: "/crystal-ball1.png",
       gradient: "linear-gradient(135deg, rgba(0,191,166,0.85), rgba(116,192,252,0.85))",
       stepColor: "#00BFA6",
@@ -44,7 +30,7 @@ export default function HowItWorks() {
     {
       title: "Interact and Explore",
       description:
-        "Dive into your storyworld! Make choices, discover hidden paths, or share your magical story with friends and fellow dreamers.",
+        "Make choices, discover hidden paths, and share your unique adventure with friends and fellow dreamers.",
       image: "/telescope1.png",
       gradient: "linear-gradient(135deg, rgba(108,92,231,0.85), rgba(255,209,102,0.85))",
       stepColor: "#6C5CE7",
@@ -241,9 +227,8 @@ export default function HowItWorks() {
               }}
             >
               <motion.div
-                className="relative w-full cursor-pointer"
+                className="relative w-full"
                 style={{
-                  transformStyle: "preserve-3d",
                   minHeight: "500px",
                 }}
                 initial={{ opacity: 0, y: 120, scale: 0.8 }}
@@ -254,27 +239,17 @@ export default function HowItWorks() {
                   delay: index * 0.3, 
                   ease: "easeOut",
                 }}
-                animate={{
-                  rotateY: flippedCards.includes(index) ? 180 : 0,
-                }}
                 whileHover={{ 
                   y: -15,
                   scale: 1.05,
                 }}
-                onClick={() => toggleFlip(index)}
               >
-                {/* FRONT FACE */}
+                {/* SINGLE CARD FACE (NO FLIP) */}
                 <motion.div
                   className="absolute inset-0 p-10 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] group"
                   style={{
                     background: step.gradient,
                     backfaceVisibility: "hidden",
-                    transformStyle: "preserve-3d",
-                  }}
-                  animate={{
-                    boxShadow: flippedCards.includes(index) 
-                      ? "0 20px 60px rgba(0,0,0,0.15)"
-                      : "0 20px 60px rgba(0,0,0,0.15)",
                   }}
                 >
                   {/* Magical border glow */}
@@ -383,7 +358,7 @@ export default function HowItWorks() {
                     />
                   </motion.div>
 
-                  {/* Step text with enhanced styling */}
+                  {/* Step title */}
                   <h4
                     className="text-3xl font-bold mb-4 text-white drop-shadow-lg"
                     style={{ fontFamily: "var(--font-fredoka)" }}
@@ -391,12 +366,12 @@ export default function HowItWorks() {
                     {step.title}
                   </h4>
 
-                  {/* Click to flip hint */}
+                  {/* NEW DESCRIPTION BELOW TITLE */}
                   <p
-                    className="text-sm text-white/80 italic mt-4"
+                    className="text-lg leading-relaxed text-white/95 drop-shadow-md text-center relative z-10 px-4"
                     style={{ fontFamily: "var(--font-poppins)" }}
                   >
-                    Click to reveal details ✨
+                    {step.description}
                   </p>
 
                   {/* Magical shine effect on hover */}
@@ -420,63 +395,6 @@ export default function HowItWorks() {
                       }}
                     />
                   </motion.div>
-                </motion.div>
-
-                {/* BACK FACE */}
-                <motion.div
-                  className="absolute inset-0 p-10 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] flex flex-col justify-center items-center"
-                  style={{
-                    background: step.gradient,
-                    backfaceVisibility: "hidden",
-                    transform: "rotateY(180deg)",
-                    transformStyle: "preserve-3d",
-                  }}
-                >
-                  {/* Magical border glow */}
-                  <motion.div
-                    className="absolute inset-0 rounded-3xl opacity-70"
-                    style={{
-                      background: `linear-gradient(135deg, transparent, ${step.shadowColor}, transparent)`,
-                      filter: "blur(20px)",
-                    }}
-                  />
-
-                  {/* Step number on back */}
-                  <motion.div
-                    className="text-3xl font-extrabold mb-6 relative z-10"
-                    style={{
-                      fontFamily: "var(--font-fredoka)",
-                      color: step.stepColor,
-                      WebkitTextStroke: "1px rgba(45,52,54,0.5)",
-                      textShadow: "2px 2px 4px rgba(0,0,0,0.4)",
-                    }}
-                  >
-                    Step {index + 1}
-                  </motion.div>
-
-                  {/* Title on back */}
-                  <h4
-                    className="text-3xl font-bold mb-6 text-white drop-shadow-lg text-center"
-                    style={{ fontFamily: "var(--font-fredoka)" }}
-                  >
-                    {step.title}
-                  </h4>
-
-                  {/* Description */}
-                  <p
-                    className="text-lg leading-relaxed text-white/95 drop-shadow-md text-center relative z-10 px-4"
-                    style={{ fontFamily: "var(--font-poppins)" }}
-                  >
-                    {step.description}
-                  </p>
-
-                  {/* Click to flip back hint */}
-                  <p
-                    className="text-sm text-white/80 italic mt-6"
-                    style={{ fontFamily: "var(--font-poppins)" }}
-                  >
-                    Click to flip back
-                  </p>
                 </motion.div>
               </motion.div>
             </div>

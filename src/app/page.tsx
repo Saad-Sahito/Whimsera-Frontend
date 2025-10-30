@@ -17,9 +17,9 @@ export default function Home() {
         <Hero />
       </SlideInSection>
 
-      <SlideInSection direction="left">
+      {/* <SlideInSection direction="left">
         <WhatIsWhimsera />
-      </SlideInSection>
+      </SlideInSection> */}
 
       <SlideInSection direction="right">
         <AIMagic />

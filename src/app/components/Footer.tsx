@@ -125,7 +125,7 @@ export default function Footer() {
 
       {/* Bottom center — copyright */}
       <div className="absolute bottom-2 left-0 right-0 text-center text-xs sm:text-sm text-white/80 font-nunito">
-        © {new Date().getFullYear()} Whimsera (Beta Version). All rights reserved.
+        © {new Date().getFullYear()} Whimsera (Pre-Alpha Version). All rights reserved.
       </div>
     </footer>
   );
