@@ -23,14 +23,14 @@ export default function ScrollBackground({ children }: ScrollBackgroundProps) {
     [0, 0.12, 0.25, 0.37, 0.50, 0.62, 0.75, 0.87, 1],
     // Output colors - matching each section
     [
-      "#FFF8F1",  // Hero - Seashell
-      "rgba(240, 255, 254, 1)",  // Genre Showcase - Mint tint
+      "rgba(255, 248, 241, 0.3)",  // Hero - Seashell
+      "rgba(240, 255, 254, 0)",  // Genre Showcase - Mint tint
       "rgba(255, 248, 241, 0.5)",  // Interactive Demo - Vanilla 
-      "rgba(255, 248, 241, 0.5)",  // How It Works - Seashell (keep it consistent)
-      "rgba(255, 248, 241, 0.5)",  // AI Magic - Seashell
-      "rgba(255, 245, 230, 0.5)",  // Creative Freedom - Warm sunglow tint
-      "rgba(229, 229, 229, 0.35)",  // Waitlist - Warm sunglow tint
-      "rgba(229, 229, 229, 0.68)",  // Final Section - Dark (transition to black)
+      "rgba(255, 248, 241, 0.6)",  // How It Works - Seashell (keep it consistent)
+      "rgba(255, 248, 241, 0.7)",  // AI Magic - Seashell
+      "rgba(255, 248, 241, 0.8)",  // Creative Freedom - Warm sunglow tint
+      "rgba(255, 248, 241, 0.9)",  // Waitlist - Warm sunglow tint
+      "rgba(255, 248, 241, 0.9)",  // Final Section - Dark (transition to black)
       "rgba(45, 52, 54, 1)"   // Final Section - Black
     ]
   );

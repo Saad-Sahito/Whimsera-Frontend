@@ -1,4 +1,5 @@
 "use client";
+import { useRef, useCallback } from 'react';
 import RippleWrapper from "./components/RippleWrapper";
 import ScrollBackground from "./components/ScrollBackground";
 import Navbar from "./components/Navbar";
@@ -14,6 +15,20 @@ import Footer from "./components/Footer";
 import SlideInSection from "./components/SlideInSection";
 
 export default function Home() {
+  // 1. Create a ref for the target section (WaitlistSection)
+  const waitlistRef = useRef<HTMLDivElement>(null);
+
+  // 2. Create the scroll function using the ref
+  const scrollToWaitlist = useCallback(() => {
+    if (waitlistRef.current) {
+      // Use scrollIntoView with 'smooth' behavior for the best result
+      // This is generally preferred over calculating offsets with window.scrollTo() in React/Next.js
+      waitlistRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start", // Aligns the top of the element with the top of the viewport
+      });
+    }
+  }, []);
   return (
     <ScrollBackground>
       <main className="pt-21 min-h-screen text-[#2D3436] overflow-x-hidden">
@@ -22,7 +37,7 @@ export default function Home() {
         {/* Hero Section */}
         <RippleWrapper>
           <SlideInSection direction="up">
-            <Hero />
+            <Hero onScrollToWaitlist={scrollToWaitlist} />
           </SlideInSection>
         </RippleWrapper>
 
@@ -62,9 +77,11 @@ export default function Home() {
         </RippleWrapper>
 
         {/* Waitlist Section */}
-        <RippleWrapper>
+<RippleWrapper>
           <SlideInSection direction="up">
-            <WaitlistSection />
+            <div ref={waitlistRef}> {/* <-- Attach the ref to a wrapper or the component's main div */}
+              <WaitlistSection />
+            </div>
           </SlideInSection>
         </RippleWrapper>
 

@@ -2,61 +2,102 @@
 
 import { motion } from "framer-motion";
 import { Sparkles, ArrowDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import React from 'react';
 
-export default function Hero() {
+// 1. Add 'onScrollToWaitlist' to the props interface (if you are using TypeScript)
+// In plain JavaScript/React, you just receive it as a prop.
+// I'll add the prop for clarity.
+interface HeroProps {
+  onScrollToWaitlist: () => void; // Defines the type: A function taking no arguments, returning nothing.
+}
+export default function Hero({ onScrollToWaitlist }: HeroProps) {
   const [hoveredWord, setHoveredWord] = useState<number | null>(null);
+  const [blobs, setBlobs] = useState<
+    Array<{
+      id: number;
+      width: number;
+      height: number;
+      left: string;
+      top: string;
+      baseColor: string;
+      duration: number;
+      delay: number;
+    }>
+  >([]);
 
+  /* ------------------------------------------------------------------ */
+  /* 1. Generate blobs only once on the client (SSR-safe)               */
+  /* ------------------------------------------------------------------ */
+  useEffect(() => {
+    const baseColors = [
+      "rgba(108,92,231,0.08)",   // #6C5CE7
+      "rgba(0,191,166,0.08)",    // #00BFA6
+      "rgba(255,118,117,0.08)",  // #FF7675
+      "rgba(255,209,102,0.08)",  // #FFD166
+    ];
+
+    const generated = [...Array(15)].map((_, i) => ({
+      id: i,
+      width: Math.random() * 300 + 100,
+      height: Math.random() * 300 + 100,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      baseColor: baseColors[i % 4],
+      duration: Math.random() * 10,
+      delay: Math.random() * 5,
+    }));
+
+    setBlobs(generated);
+  }, []);
+
+  /* ------------------------------------------------------------------ */
+  /* 2. Compute active color from hovered word                          */
+  /* ------------------------------------------------------------------ */
   const heroWords = [
-    { text: "Create", color: "#6C5CE7" },
-    { text: "Explore", color: "#00BFA6" },
-    { text: "Choose", color: "#FF7675" },
+    { text: "Create",    color: "#6C5CE7" },
+    { text: "Explore",   color: "#00BFA6" },
+    { text: "Choose",    color: "#FF7675" },
     { text: "Adventure", color: "#FFD166" }
   ];
 
+  const activeColor = hoveredWord !== null
+    ? (() => {
+        const hex = heroWords[hoveredWord].color;
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r},${g},${b},0.08)`;
+      })()
+    : null;
+
+  // This old function scrolls one viewport height down (to the 'next' section)
   const scrollToContent = () => {
-    window.scrollTo({
-      top: window.innerHeight,
-      behavior: "smooth"
-    });
+    window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
   };
+  
+  // You can safely remove the scrollToSecondLastSectionFixed function 
+  // as it is now handled by the prop 'onScrollToWaitlist' from the parent 'Home' component.
+  /*
+  const scrollToSecondLastSectionFixed = () => {
+    const targetSection = document.querySelectorAll('section')[6]; 
+    if (targetSection) {
+      const offsetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({ 
+        top: offsetPosition, 
+        behavior: "smooth" 
+      });
+    } else {
+      console.error("Could not find the 7th section element.");
+    }
+  };
+  */
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated background blobs */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full blur-3xl"
-            style={{
-              width: Math.random() * 300 + 100,
-              height: Math.random() * 300 + 100,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              background: [
-                "rgba(108,92,231,0.08)", 
-                "rgba(0,191,166,0.08)", 
-                "rgba(255,118,117,0.08)",
-                "rgba(255,209,102,0.08)"
-              ][i % 4],
-            }}
-            animate={{ 
-              y: [0, -40, 0], 
-              x: [0, 30, 0], 
-              scale: [1, 1.15, 1] 
-            }}
-            transition={{ 
-              duration: 20 + Math.random() * 10, 
-              repeat: Infinity, 
-              ease: "easeInOut", 
-              delay: Math.random() * 5 
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Main content */}
+      {/* ... (Blobs and Eyebrow content are unchanged) ... */}
+      
+      {/* ---------- Main content ---------- */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         {/* Eyebrow */}
         <motion.div
@@ -71,7 +112,7 @@ export default function Hero() {
           </span>
         </motion.div>
 
-        {/* Main Headline - Large and Bold */}
+        {/* Main Headline */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -89,7 +130,7 @@ export default function Hero() {
             </span>
           </h1>
 
-          {/* Animated word carousel */}
+          {/* Animated word carousel (unchanged) */}
           <div className="flex items-center justify-center gap-3 flex-wrap mb-8">
             {heroWords.map((word, i) => (
               <motion.span
@@ -100,10 +141,10 @@ export default function Hero() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + i * 0.1 }}
                 className="text-3xl md:text-4xl font-bold cursor-default transition-all duration-300"
-                style={{ 
+                style={{
                   fontFamily: "var(--font-fredoka)",
                   color: hoveredWord === i ? word.color : "#2D3436",
-                  transform: hoveredWord === i ? "scale(1.1)" : "scale(1)"
+                  transform: hoveredWord === i ? "scale(1.1)" : "scale(1)",
                 }}
               >
                 {word.text}
@@ -115,7 +156,7 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {/* Subheadline */}
+        {/* Subheadline (unchanged) */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -133,11 +174,14 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
         >
+          {/* Main Button: "Start Your Adventure" */}
           <motion.button
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             className="group relative px-10 py-5 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] text-white rounded-full font-bold text-lg shadow-2xl overflow-hidden"
             style={{ fontFamily: "var(--font-poppins)" }}
+            // 2. Attach the onScrollToWaitlist function to the outer button for the main click
+            onClick={onScrollToWaitlist} 
           >
             <span className="relative z-10 flex items-center gap-2">
               Start Your Adventure
@@ -147,12 +191,15 @@ export default function Hero() {
               className="absolute inset-0 bg-gradient-to-r from-[#00BFA6] to-[#6C5CE7]"
               initial={{ x: "100%" }}
               whileHover={{ x: 0 }}
+              // REMOVED: onClick={onScrollToWaitlist} from here 
+              // to prevent conflicts with the animation on the inner div
               transition={{ duration: 0.3 }}
             />
           </motion.button>
 
+          {/* Secondary Button: "Explore Features" (Uses the old viewport scroll) */}
           <motion.button
-            onClick={scrollToContent}
+            onClick={scrollToContent} // Keep this if you still want to scroll one viewport down
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="px-10 py-5 bg-white/60 backdrop-blur-md border-2 border-[#2D3436]/20 text-[#2D3436] rounded-full font-bold text-lg hover:bg-white hover:border-[#6C5CE7] transition-all shadow-lg"
@@ -162,7 +209,7 @@ export default function Hero() {
           </motion.button>
         </motion.div>
 
-        {/* Feature highlights - minimal pills */}
+        {/* Feature highlights */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -171,7 +218,7 @@ export default function Hero() {
         >
           {[
             "Unlimited Stories",
-            "Every Genre Imaginable", 
+            "Every Genre Imaginable",
             "Your Choices Matter",
             "AI-Powered Narrative"
           ].map((feature, i) => (
@@ -189,7 +236,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator (optional - uncomment to use) */}
       {/* <motion.button
         onClick={scrollToContent}
         initial={{ opacity: 0, y: -20 }}
@@ -214,7 +261,7 @@ export default function Hero() {
         </motion.div>
       </motion.button> */}
 
-      {/* Subtle wave transition */}
+      {/* Subtle wave transition (optional - uncomment to use) */}
       {/* <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
         <svg 
           viewBox="0 0 1440 120" 

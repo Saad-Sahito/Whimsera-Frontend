@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Sparkles, Mail, ArrowRight, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles,Rocket, Mail, ArrowRight, Check, Star, Zap, Gift, Shield } from "lucide-react";
 
 export default function WaitlistSection() {
   const [email, setEmail] = useState("");
@@ -11,53 +11,58 @@ export default function WaitlistSection() {
 
   const handleSubmit = async () => {
     if (!email || isLoading) return;
-    
     setIsLoading(true);
-    
-    // Simulate API call - replace with your actual waitlist API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     setSubmitted(true);
     setIsLoading(false);
     setEmail("");
   };
 
   const benefits = [
-    "Early access to Whimsera before public launch",
-    "Unlimited story creation during beta period",
-    "Shape the future with your feedback",
-    "Exclusive beta community access"
+    {
+      text: "Early access to Whimsera before public launch",
+      icon: Rocket,
+      color: "#6C5CE7",
+      gradient: "from-[#6C5CE7] to-[#8B7FE8]",
+    },
+    {
+      text: "Free story creation during beta period",
+      icon: Sparkles,
+      color: "#FFD166",
+      gradient: "from-[#FFD166] to-[#FFE066]",
+    },
+    {
+      text: "Shape the future with your feedback",
+      icon: Zap,
+      color: "#00BFA6",
+      gradient: "from-[#00BFA6] to-[#00D4B5]",
+    },
+    {
+      text: "Exclusive discount for beta testers after launch",
+      icon: Gift,
+      color: "#FF7675",
+      gradient: "from-[#FF7675] to-[#FF9B9A]",
+    },
   ];
 
   return (
-    <section className="relative py-24 px-6 overflow-hidden">
-      {/* Animated background elements */}
+    <section className="relative py-20 px-6 overflow-hidden">
+      {/* Animated Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute top-10 left-10 w-64 h-64 bg-[#FFD166]/20 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1, 1.2, 1],
-            x: [0, 30, 0],
-            y: [0, -20, 0]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-10 right-10 w-80 h-80 bg-[#6C5CE7]/15 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1.1, 1, 1.1],
-            x: [0, -20, 0],
-            y: [0, 30, 0]
-          }}
+          className="absolute top-10 left-10 w-80 h-80 bg-[#FFD166]/25 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.3, 1], x: [0, 40, 0], y: [0, -30, 0] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-[#6 ستC5CE7]/20 rounded-full blur-3xl"
+          animate={{ scale: [1.1, 1, 1.1], x: [0, -30, 0], y: [0, 40, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
           className="absolute top-1/2 left-1/3 w-72 h-72 bg-[#00BFA6]/15 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1, 1.15, 1],
-            rotate: [0, 180, 360]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
+          transition={{ duration:  18, repeat: Infinity, ease: "linear" }}
         />
       </div>
 
@@ -68,58 +73,91 @@ export default function WaitlistSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          className="text-center mb-14"
         >
           <motion.div
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/60 backdrop-blur-sm border-2 border-[#FFD166]/40 mb-6 shadow-lg"
-            animate={{ y: [0, -5, 0] }}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#FFD166] to-[#FFE066] text-[#2D3436] font-bold shadow-lg border-2 border-white/50"
+            animate={{ y: [0, -6, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
-            <Sparkles className="w-5 h-5 text-[#FFD166]" />
-            <span className="text-sm font-bold text-[#2D3436]">Limited Beta Access</span>
+            <Sparkles className="w-5 h-5 text-[#2D3436]" />
+            <span className="text-sm">Limited Beta Access</span>
+            <Sparkles className="w-5 h-5 text-[#2D3436]" />
           </motion.div>
 
           <h2
-            className="text-4xl md:text-6xl font-bold text-[#2D3436] mb-6 leading-tight"
+            className="text-5xl md:text-7xl font-bold text-[#2D3436] mt-6 mb-5 leading-tight"
             style={{ fontFamily: "var(--font-fredoka)" }}
           >
             Be Among the First
-            <span className="block mt-2 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#FFD166] bg-clip-text text-transparent">
+            <span className="block mt-3 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#FFD166] bg-clip-text text-transparent text-6xl md:text-8xl">
               Storytellers
             </span>
           </h2>
 
-          <p className="text-xl text-[#2D3436]/75 max-w-2xl mx-auto leading-relaxed" style={{ fontFamily: "var(--font-nunito)" }}>
-            Join the waitlist to get exclusive early access when we launch. 
-            No credit card required. Just pure storytelling magic.
+          <p className="text-xl text-[#2D3436]/70 max-w-2xl mx-auto leading-relaxed" style={{ fontFamily: "var(--font-nunito)" }}>
+            Join the waitlist to unlock early access. No credit card. Just magic.
           </p>
         </motion.div>
 
-        {/* Benefits Grid */}
+        {/* Benefits Grid – Colorful Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid md:grid-cols-2 gap-4 mb-12 max-w-3xl mx-auto"
+          className="grid md:grid-cols-2 gap-5 mb-14 max-w-3xl mx-auto"
         >
-          {benefits.map((benefit, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-              className="flex items-start gap-3 p-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-[#E5E5E5] shadow-sm"
-            >
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-[#00BFA6] to-[#6C5CE7] flex items-center justify-center mt-0.5">
-                <Check className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-[#2D3436] font-medium leading-relaxed" style={{ fontFamily: "var(--font-poppins)" }}>
-                {benefit}
-              </span>
-            </motion.div>
-          ))}
+          {benefits.map((benefit, i) => {
+            const Icon = benefit.icon;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -30, scale: 0.9 }}
+                whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                whileHover={{ y: -6, scale: 1.03 }}
+                className="group relative p-5 bg-white rounded-2xl shadow-lg border-2 border-white/50 overflow-hidden"
+              >
+                {/* Gradient Background */}
+                <div
+                  className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity"
+                  style={{
+                    background: `linear-gradient(135deg, ${benefit.color}, transparent)`,
+                  }}
+                />
+
+                <div className="relative flex items-start gap-4">
+                  <motion.div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+                    style={{
+                      background: `linear-gradient(135deg, ${benefit.color}20, ${benefit.color}05)`,
+                      boxShadow: `0 0 20px ${benefit.color}40`,
+                    }}
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <Icon className="w-6 h-6" style={{ color: benefit.color }} />
+                  </motion.div>
+
+                  <span className="text-[#2D3436] font-medium leading-relaxed" style={{ fontFamily: "var(--font-poppins)" }}>
+                    {benefit.text}
+                  </span>
+                </div>
+
+                {/* Sparkle on hover */}
+                <motion.div
+                  className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [0, 1.5, 0] }}
+                  transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 2 }}
+                >
+                  <Sparkles className="w-5 h-5" style={{ color: benefit.color }} />
+                </motion.div>
+              </motion.div>
+            );
+          })}
         </motion.div>
 
         {/* Waitlist Form */}
@@ -130,118 +168,171 @@ export default function WaitlistSection() {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="max-w-2xl mx-auto"
         >
-          {!submitted ? (
-            <div className="relative">
-              {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#00BFA6] rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity" />
-              
-              <div className="relative bg-white rounded-3xl p-8 shadow-2xl border-2 border-[#E5E5E5]">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2D3436]/40" />
-                    <input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-[#E5E5E5] focus:border-[#6C5CE7] focus:outline-none transition-all text-[#2D3436] placeholder:text-[#2D3436]/40"
-                      style={{ fontFamily: "var(--font-poppins)" }}
-                    />
-                  </div>
-                  
-                  <motion.button
-                    onClick={handleSubmit}
-                    disabled={isLoading || !email}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-4 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ fontFamily: "var(--font-poppins)" }}
-                  >
-                    {isLoading ? (
-                      <motion.div
-                        className="w-6 h-6 border-3 border-white border-t-transparent rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      />
-                    ) : (
-                      <>
-                        Join Waitlist
-                        <ArrowRight className="w-5 h-5" />
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-                
-                <p className="text-sm text-[#2D3436]/60 mt-4 text-center" style={{ fontFamily: "var(--font-poppins)" }}>
-                  We respect your privacy. No spam, ever.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="bg-white rounded-3xl p-12 shadow-2xl border-2 border-[#00BFA6] text-center"
-            >
+          <AnimatePresence mode="wait">
+            {!submitted ? (
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#00BFA6] to-[#6C5CE7] flex items-center justify-center"
+                key="form"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative"
               >
-                <Check className="w-10 h-10 text-white" />
+                {/* Shimmer Glow */}
+                <motion.div
+                  className="absolute -inset-2 rounded-3xl opacity-40"
+                  animate={{
+                    background: [
+                      "linear-gradient(90deg, transparent, #6C5CE7, #00BFA6, #FFD166, transparent)",
+                      "linear-gradient(90deg, transparent, #FFD166, #00BFA6, #6C5CE7, transparent)",
+                    ],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  style={{ filter: "blur(20px)" }}
+                />
+
+                <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border-2 border-white/50">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[#6C5CE7]" />
+                      <input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                        className="w-full pl-14 pr-5 py-5 rounded-2xl border-2 border-[#E5E5E5] focus:border-[#6C5CE7] focus:outline-none transition-all text-[#2D3436] placeholder:text-[#2D3436]/40 text-lg"
+                        style={{ fontFamily: "var(--font-poppins)" }}
+                      />
+                    </div>
+
+                    <motion.button
+                      onClick={handleSubmit}
+                      disabled={isLoading || !email}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="relative px-10 py-5 bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] text-white font-bold rounded-2xl shadow-xl overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ fontFamily: "var(--font-poppins)" }}
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-3">
+                        {isLoading ? (
+                          <motion.div
+                            className="w-6 h-6 border-3 border-white border-t-transparent rounded-full"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          />
+                        ) : (
+                          <>
+                            Join Waitlist
+                            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </span>
+                      <motion.div
+                        className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"
+                      />
+                    </motion.button>
+                  </div>
+
+                  <p className="text-sm text-[#2D3436]/60 mt-5 text-center" style={{ fontFamily: "var(--font-poppins)" }}>
+                    We respect your privacy. No spam, ever.
+                  </p>
+                </div>
               </motion.div>
-              
-              <h3 
-                className="text-3xl font-bold text-[#2D3436] mb-4"
-                style={{ fontFamily: "var(--font-fredoka)" }}
+            ) : (
+              <motion.div
+                key="success"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+                className="bg-gradient-to-br from-[#6C5CE7] to-[#00BFA6] rounded-3xl p-10 shadow-2xl text-center text-white"
               >
-                You're on the list! 🎉
-              </h3>
-              
-              <p className="text-lg text-[#2D3436]/75 mb-6" style={{ fontFamily: "var(--font-nunito)" }}>
-                Check your inbox for a confirmation email. We'll notify you as soon as Whimsera launches.
-              </p>
-              
-              <p className="text-sm text-[#2D3436]/60" style={{ fontFamily: "var(--font-poppins)" }}>
-                In the meantime, follow us on social media for updates and sneak peeks!
-              </p>
-            </motion.div>
-          )}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="w-24 h-24 mx-auto mb-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+                >
+                  <Check className="w-12 h-12 text-white" />
+                </motion.div>
+
+                <h3 className="text-4xl font-bold mb-4" style={{ fontFamily: "var(--font-fredoka)" }}>
+                  You&apos;re In! 
+                </h3>
+
+                <p className="text-lg mb-6 opacity-90" style={{ fontFamily: "var(--font-nunito)" }}>
+                  Check your inbox for confirmation. The magic begins soon.
+                </p>
+
+                <p className="text-sm opacity-80" style={{ fontFamily: "var(--font-poppins)" }}>
+                  Follow us for updates & sneak peeks!
+                </p>
+
+                {/* Confetti Stars */}
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-3 h-3"
+                    style={{
+                      top: `${20 + i * 15}%`,
+                      left: `${20 + i * 10}%`,
+                      color: i % 2 === 0 ? "#FFD166" : "#FF7675",
+                    }}
+                    animate={{
+                      y: [0, -30, 0],
+                      rotate: [0, 360],
+                      opacity: [0, 1, 0],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      delay: i * 0.1,
+                      repeat: Infinity,
+                      repeatDelay: 3,
+                    }}
+                  >
+                    <Star className="w-full h-full" fill="currentColor" />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
-        {/* Trust indicators */}
+        {/* Trust Indicators */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-12 text-center"
+          className="mt-16 text-center"
         >
-          <p className="text-sm text-[#2D3436]/60 mb-4" style={{ fontFamily: "var(--font-poppins)" }}>
-            Trusted by storytellers worldwide
+          <p className="text-sm text-[#2D3436]/60 mb-5" style={{ fontFamily: "var(--font-poppins)" }}>
+            Trusted by dreamers worldwide
           </p>
-          <div className="flex justify-center items-center gap-8 flex-wrap opacity-60">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#6C5CE7]/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-[#6C5CE7]" />
-              </div>
-              <span className="text-sm font-medium text-[#2D3436]">AI-Powered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#00BFA6]/20 flex items-center justify-center">
-                <Check className="w-4 h-4 text-[#00BFA6]" />
-              </div>
-              <span className="text-sm font-medium text-[#2D3436]">Secure & Private</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#FFD166]/20 flex items-center justify-center">
-                <ArrowRight className="w-4 h-4 text-[#FFD166]" />
-              </div>
-              <span className="text-sm font-medium text-[#2D3436]">Easy to Use</span>
-            </div>
+          <div className="flex justify-center items-center gap-8 flex-wrap">
+            {[
+              { Icon: Sparkles, label: "AI-Powered", color: "#6C5CE7" },
+              { Icon: Shield, label: "Secure & Private", color: "#00BFA6" },
+              { Icon: Zap, label: "Lightning Fast", color: "#FFD166" },
+            ].map(({ Icon, label, color }, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.1 }}
+                className="flex items-center gap-2"
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shadow-md"
+                  style={{
+                    background: `${color}15`,
+                    boxShadow: `0 0 15px ${color}40`,
+                  }}
+                >
+                  <Icon className="w-5 h-5" style={{ color }} />
+                </div>
+                <span className="text-sm font-semibold text-[#2D3436]" style={{ fontFamily: "var(--font-poppins)" }}>
+                  {label}
+                </span>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </div>

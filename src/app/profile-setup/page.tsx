@@ -1,294 +1,294 @@
-"use client";
+// "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
+// import { motion, AnimatePresence } from "framer-motion";
+// import Link from "next/link";
+// import { useState, useEffect } from "react";
+// import { useRouter } from "next/navigation";
+// import { useAuth } from "../context/AuthContext";
 
-const tiers = [
-  { value: 1, name: "Free", description: "Begin your journey", icon: "Seedling" },
-  { value: 2, name: "Scribe", description: "Seek new horizons", icon: "Sword" },
-];
+// const tiers = [
+//   { value: 1, name: "Free", description: "Begin your journey", icon: "Seedling" },
+//   { value: 2, name: "Scribe", description: "Seek new horizons", icon: "Sword" },
+// ];
 
-export default function ProfileSetup() {
-  const { isAuthenticated, userId, isLoading: authLoading, accessToken } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [formError, setFormError] = useState("");
-  const router = useRouter();
+// export default function ProfileSetup() {
+//   const { isAuthenticated, userId, isLoading: authLoading, accessToken } = useAuth();
+//   const [loading, setLoading] = useState(false);
+//   const [formError, setFormError] = useState("");
+//   const router = useRouter();
 
-  const [step, setStep] = useState(1);
-  const [nickname, setNickname] = useState("");
-  const [age, setAge] = useState("");
-  const [selectedTier, setSelectedTier] = useState<number | null>(null);
+//   const [step, setStep] = useState(1);
+//   const [nickname, setNickname] = useState("");
+//   const [age, setAge] = useState("");
+//   const [selectedTier, setSelectedTier] = useState<number | null>(null);
 
-  const showLoader = loading || authLoading;
+//   const showLoader = loading || authLoading;
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!isAuthenticated) router.push("/login");
-  }, [isAuthenticated, authLoading, router]);
+//   useEffect(() => {
+//     if (authLoading) return;
+//     if (!isAuthenticated) router.push("/login");
+//   }, [isAuthenticated, authLoading, router]);
 
-  // Loader Component
-  const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
-    <AnimatePresence>
-      {isLoading && (
-        <motion.div
-          className="fixed top-0 left-0 right-0 h-1 z-[1000] origin-left"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          exit={{ scaleX: 0 }}
-          transition={{
-            duration: 0.3,
-            ease: "easeOut",
-          }}
-        >
-          <div
-            className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
-            style={{
-              backgroundSize: "200% 100%",
-              animation: "gradient-shift 1.5s ease infinite",
-            }}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+//   // Loader Component
+//   const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
+//     <AnimatePresence>
+//       {isLoading && (
+//         <motion.div
+//           className="fixed top-0 left-0 right-0 h-1 z-[1000] origin-left"
+//           initial={{ scaleX: 0 }}
+//           animate={{ scaleX: 1 }}
+//           exit={{ scaleX: 0 }}
+//           transition={{
+//             duration: 0.3,
+//             ease: "easeOut",
+//           }}
+//         >
+//           <div
+//             className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
+//             style={{
+//               backgroundSize: "200% 100%",
+//               animation: "gradient-shift 1.5s ease infinite",
+//             }}
+//           />
+//         </motion.div>
+//       )}
+//     </AnimatePresence>
+//   );
 
-  const handleNext = () => {
-    if (step === 1) {
-      if (!nickname.trim()) {
-        setFormError("Please enter a nickname");
-        return;
-      }
-      if (!age || isNaN(Number(age)) || Number(age) < 13) {
-        setFormError("Please enter a valid age (13 or older)");
-        return;
-      }
-    }
-    setFormError("");
-    setStep((prev) => prev + 1);
-  };
+//   const handleNext = () => {
+//     if (step === 1) {
+//       if (!nickname.trim()) {
+//         setFormError("Please enter a nickname");
+//         return;
+//       }
+//       if (!age || isNaN(Number(age)) || Number(age) < 13) {
+//         setFormError("Please enter a valid age (13 or older)");
+//         return;
+//       }
+//     }
+//     setFormError("");
+//     setStep((prev) => prev + 1);
+//   };
 
-  const handleBack = () => {
-    setFormError("");
-    setStep((prev) => prev - 1);
-  };
+//   const handleBack = () => {
+//     setFormError("");
+//     setStep((prev) => prev - 1);
+//   };
 
-  const handleSubmit = async () => {
-    if (!selectedTier) {
-      setFormError("Please select a tier");
-      return;
-    }
+//   const handleSubmit = async () => {
+//     if (!selectedTier) {
+//       setFormError("Please select a tier");
+//       return;
+//     }
 
-    setFormError("");
-    setLoading(true);
+//     setFormError("");
+//     setLoading(true);
 
-    try {
-      // Step 1: Register with Supabase via /api/register-with-tag
-      const resp = await fetch("/api/register-with-tag", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ nickname, age: parseInt(age) }),
-      });
+//     try {
+//       // Step 1: Register with Supabase via /api/register-with-tag
+//       const resp = await fetch("/api/register-with-tag", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${accessToken}`,
+//         },
+//         body: JSON.stringify({ nickname, age: parseInt(age) }),
+//       });
 
-      const json = await resp.json();
+//       const json = await resp.json();
 
-      if (!resp.ok) {
-        if (json.error?.includes("Unauthorized")) {
-          setFormError("Authentication failed. Please log in again.");
-          router.push("/login");
-        } else {
-          setFormError("Profile setup failed. Please try again.");
-        }
-        setLoading(false);
-        return;
-      }
+//       if (!resp.ok) {
+//         if (json.error?.includes("Unauthorized")) {
+//           setFormError("Authentication failed. Please log in again.");
+//           router.push("/login");
+//         } else {
+//           setFormError("Profile setup failed. Please try again.");
+//         }
+//         setLoading(false);
+//         return;
+//       }
 
-      const newUserId = json.userId || json.id;
+//       const newUserId = json.userId || json.id;
 
-      // Step 2: Register with FastAPI backend
-      const payload = {
-        nickname,
-        age: parseInt(age),
-        tier: selectedTier,
-        stories: [],
-        user_id: newUserId,
-      };
+//       // Step 2: Register with FastAPI backend
+//       const payload = {
+//         nickname,
+//         age: parseInt(age),
+//         tier: selectedTier,
+//         stories: [],
+//         user_id: newUserId,
+//       };
 
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const backendResp = await fetch(`${backendUrl}/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(payload),
-      });
+//       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+//       const backendResp = await fetch(`${backendUrl}/users`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${accessToken}`,
+//         },
+//         body: JSON.stringify(payload),
+//       });
 
-      if (!backendResp.ok) {
-        console.error("FastAPI error:", await backendResp.text());
-        setFormError("Backend registration failed. Please contact support.");
-        setLoading(false);
-        return;
-      }
+//       if (!backendResp.ok) {
+//         console.error("FastAPI error:", await backendResp.text());
+//         setFormError("Backend registration failed. Please contact support.");
+//         setLoading(false);
+//         return;
+//       }
 
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Profile setup error:", error);
-      setFormError("An unexpected error occurred. Please try again.");
-      setLoading(false);
-    }
-  };
+//       router.push("/dashboard");
+//     } catch (error) {
+//       console.error("Profile setup error:", error);
+//       setFormError("An unexpected error occurred. Please try again.");
+//       setLoading(false);
+//     }
+//   };
 
-  if (authLoading)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
-        <TopLoader isLoading={true} />
-        Checking authentication...
-      </div>
-    );
+//   if (authLoading)
+//     return (
+//       <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
+//         <TopLoader isLoading={true} />
+//         Checking authentication...
+//       </div>
+//     );
 
-  return (
-    <main
-      className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden"
-      style={{
-        backgroundImage: "url('/download.jpeg')",
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <TopLoader isLoading={showLoader} />
-      <div className="absolute inset-0 bg-black/30 z-0" />
+//   return (
+//     <main
+//       className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden"
+//       style={{
+//         backgroundImage: "url('/download.jpeg')",
+//         backgroundSize: "cover",
+//         backgroundRepeat: "no-repeat",
+//         backgroundAttachment: "fixed",
+//       }}
+//     >
+//       <TopLoader isLoading={showLoader} />
+//       <div className="absolute inset-0 bg-black/30 z-0" />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -100 }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="relative z-20 bg-white/10 shadow-2xl w-[90%] max-w-2xl flex flex-col items-center backdrop-blur-lg"
-          style={{
-            background: "linear-gradient(135deg, rgba(108, 92, 231, 0.9), rgba(0, 191, 166, 0.85))",
-            padding: "40px",
-            gap: "25px",
-            borderRadius: "48px",
-          }}
-        >
-          <Link
-            href="/"
-            className="text-5xl md:text-6xl leading-none font-bold text-white drop-shadow-lg mb-2"
-            style={{ fontFamily: "var(--font-annie)" }}
-          >
-            Whimsera
-          </Link>
+//       <AnimatePresence mode="wait">
+//         <motion.div
+//           key={step}
+//           initial={{ opacity: 0, x: 100 }}
+//           animate={{ opacity: 1, x: 0 }}
+//           exit={{ opacity: 0, x: -100 }}
+//           transition={{ duration: 0.4, ease: "easeInOut" }}
+//           className="relative z-20 bg-white/10 shadow-2xl w-[90%] max-w-2xl flex flex-col items-center backdrop-blur-lg"
+//           style={{
+//             background: "linear-gradient(135deg, rgba(108, 92, 231, 0.9), rgba(0, 191, 166, 0.85))",
+//             padding: "40px",
+//             gap: "25px",
+//             borderRadius: "48px",
+//           }}
+//         >
+//           <Link
+//             href="/"
+//             className="text-5xl md:text-6xl leading-none font-bold text-white drop-shadow-lg mb-2"
+//             style={{ fontFamily: "var(--font-annie)" }}
+//           >
+//             Whimsera
+//           </Link>
 
-          {formError && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-red-200 bg-red-500/30 px-4 py-2 rounded-lg text-sm text-center backdrop-blur-sm"
-            >
-              {formError}
-            </motion.p>
-          )}
+//           {formError && (
+//             <motion.p
+//               initial={{ opacity: 0, y: -10 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               className="text-red-200 bg-red-500/30 px-4 py-2 rounded-lg text-sm text-center backdrop-blur-sm"
+//             >
+//               {formError}
+//             </motion.p>
+//           )}
 
-          {/* Step 1: Nickname & Age */}
-          {step === 1 && (
-            <div className="w-full flex flex-col items-center space-y-6">
-              <h2 className="text-3xl font-bold text-white text-center">
-                Welcome! Let’s set up your profile
-              </h2>
-              <div className="w-full max-w-md space-y-4">
-                <div className="flex flex-col text-left">
-                  <label className="text-lg mb-2 text-white font-semibold">Nickname</label>
-                  <input
-                    type="text"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    placeholder="e.g., Luna, Alex, Sage"
-                    className="px-4 py-3 rounded-xl border-2 border-white/50 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FFD166] text-lg backdrop-blur-sm"
-                  />
-                </div>
-                <div className="flex flex-col text-left">
-                  <label className="text-lg mb-2 text-white font-semibold">Your Age</label>
-                  <input
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="13 or older"
-                    className="px-4 py-3 rounded-xl border-2 border-white/50 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FFD166] text-lg backdrop-blur-sm"
-                    min="13"
-                  />
-                </div>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleNext}
-                className="w-full max-w-md bg-gradient-to-r from-[#00BFA6] to-[#74C0FC] text-white py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300"
-              >
-                Next
-              </motion.button>
-            </div>
-          )}
+//           {/* Step 1: Nickname & Age */}
+//           {step === 1 && (
+//             <div className="w-full flex flex-col items-center space-y-6">
+//               <h2 className="text-3xl font-bold text-white text-center">
+//                 Welcome! Let’s set up your profile
+//               </h2>
+//               <div className="w-full max-w-md space-y-4">
+//                 <div className="flex flex-col text-left">
+//                   <label className="text-lg mb-2 text-white font-semibold">Nickname</label>
+//                   <input
+//                     type="text"
+//                     value={nickname}
+//                     onChange={(e) => setNickname(e.target.value)}
+//                     placeholder="e.g., Luna, Alex, Sage"
+//                     className="px-4 py-3 rounded-xl border-2 border-white/50 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FFD166] text-lg backdrop-blur-sm"
+//                   />
+//                 </div>
+//                 <div className="flex flex-col text-left">
+//                   <label className="text-lg mb-2 text-white font-semibold">Your Age</label>
+//                   <input
+//                     type="number"
+//                     value={age}
+//                     onChange={(e) => setAge(e.target.value)}
+//                     placeholder="13 or older"
+//                     className="px-4 py-3 rounded-xl border-2 border-white/50 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FFD166] text-lg backdrop-blur-sm"
+//                     min="13"
+//                   />
+//                 </div>
+//               </div>
+//               <motion.button
+//                 whileHover={{ scale: 1.02 }}
+//                 whileTap={{ scale: 0.98 }}
+//                 onClick={handleNext}
+//                 className="w-full max-w-md bg-gradient-to-r from-[#00BFA6] to-[#74C0FC] text-white py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300"
+//               >
+//                 Next
+//               </motion.button>
+//             </div>
+//           )}
 
-          {/* Step 2: Choose Tier */}
-          {step === 2 && (
-            <div className="w-full flex flex-col items-center space-y-6">
-              <h2 className="text-3xl font-bold text-white text-center">Choose your adventure tier</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
-                {tiers.map((tier) => (
-                  <motion.button
-                    key={tier.value}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setSelectedTier(tier.value);
-                      setFormError("");
-                    }}
-                    className={`p-6 rounded-2xl text-left transition-all duration-300 ${
-                      selectedTier === tier.value
-                        ? "bg-gradient-to-br from-[#FFD166] to-[#FF7675] text-[#2D3436] shadow-2xl"
-                        : "bg-white/20 text-white hover:bg-white/30"
-                    }`}
-                  >
-                    <div className="text-4xl mb-2">{tier.icon}</div>
-                    <h3 className="text-2xl font-bold mb-1">{tier.name}</h3>
-                    <p className={`text-sm ${selectedTier === tier.value ? "text-[#2D3436]/80" : "text-white/80"}`}>
-                      {tier.description}
-                    </p>
-                  </motion.button>
-                ))}
-              </div>
-              <div className="flex gap-3 w-full max-w-md">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBack}
-                  className="flex-1 bg-white/20 text-white py-4 rounded-xl text-xl font-semibold hover:bg-white/30 transition-all duration-300"
-                >
-                  Back
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleSubmit}
-                  disabled={loading || !selectedTier}
-                  className="flex-1 bg-gradient-to-r from-[#FFD166] to-[#FF7675] text-[#2D3436] py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Creating Magic..." : "Complete Setup"}
-                </motion.button>
-              </div>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </main>
-  );
-}
+//           {/* Step 2: Choose Tier */}
+//           {step === 2 && (
+//             <div className="w-full flex flex-col items-center space-y-6">
+//               <h2 className="text-3xl font-bold text-white text-center">Choose your adventure tier</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+//                 {tiers.map((tier) => (
+//                   <motion.button
+//                     key={tier.value}
+//                     whileHover={{ scale: 1.05 }}
+//                     whileTap={{ scale: 0.95 }}
+//                     onClick={() => {
+//                       setSelectedTier(tier.value);
+//                       setFormError("");
+//                     }}
+//                     className={`p-6 rounded-2xl text-left transition-all duration-300 ${
+//                       selectedTier === tier.value
+//                         ? "bg-gradient-to-br from-[#FFD166] to-[#FF7675] text-[#2D3436] shadow-2xl"
+//                         : "bg-white/20 text-white hover:bg-white/30"
+//                     }`}
+//                   >
+//                     <div className="text-4xl mb-2">{tier.icon}</div>
+//                     <h3 className="text-2xl font-bold mb-1">{tier.name}</h3>
+//                     <p className={`text-sm ${selectedTier === tier.value ? "text-[#2D3436]/80" : "text-white/80"}`}>
+//                       {tier.description}
+//                     </p>
+//                   </motion.button>
+//                 ))}
+//               </div>
+//               <div className="flex gap-3 w-full max-w-md">
+//                 <motion.button
+//                   whileHover={{ scale: 1.02 }}
+//                   whileTap={{ scale: 0.98 }}
+//                   onClick={handleBack}
+//                   className="flex-1 bg-white/20 text-white py-4 rounded-xl text-xl font-semibold hover:bg-white/30 transition-all duration-300"
+//                 >
+//                   Back
+//                 </motion.button>
+//                 <motion.button
+//                   whileHover={{ scale: 1.02 }}
+//                   whileTap={{ scale: 0.98 }}
+//                   onClick={handleSubmit}
+//                   disabled={loading || !selectedTier}
+//                   className="flex-1 bg-gradient-to-r from-[#FFD166] to-[#FF7675] text-[#2D3436] py-4 rounded-xl text-xl font-semibold hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+//                 >
+//                   {loading ? "Creating Magic..." : "Complete Setup"}
+//                 </motion.button>
+//               </div>
+//             </div>
+//           )}
+//         </motion.div>
+//       </AnimatePresence>
+//     </main>
+//   );
+// }
