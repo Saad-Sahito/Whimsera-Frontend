@@ -21,7 +21,7 @@ const genres = [
     gradient: "from-[#FDCB6E] to-[#FFEAA7]",
     example:
       "When a clumsy wizard tries to open a bakery, chaos—and laughter—ensues...",
-    bgImage: "/Genre_bg/Comedy1.jpeg",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Comedy1.png",
   },
   {
     Icon: Sword,
@@ -31,7 +31,7 @@ const genres = [
     gradient: "from-[#6C5CE7] to-[#8B7FE8]",
     example:
       "Forge alliances with elven kingdoms and battle ancient evils...",
-    bgImage: "/Genre_bg/Fantasy1.jpeg",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Fantasy1.png",
   },
   {
     Icon: Heart,
@@ -41,7 +41,7 @@ const genres = [
     gradient: "from-[#FF7675] to-[#FF9B9A]",
     example:
       "Two strangers meet on a rainy night, their destinies intertwined...",
-    bgImage: "/Genre_bg/Romance3.jpeg",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Romance3.png",
   },
   {
     Icon: Skull,
@@ -51,7 +51,7 @@ const genres = [
     gradient: "from-[#2D3436] to-[#636E72]",
     example:
       "The old house whispers secrets no one should ever hear...",
-    bgImage: "/Genre_bg/Horror1.jpeg",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Horror1.png",
   },
   {
     Icon: Rocket,
@@ -61,7 +61,7 @@ const genres = [
     gradient: "from-[#74C0FC] to-[#4DABF7]",
     example:
       "Your ship's AI has detected an anomaly in the space-time fabric...",
-    bgImage: "/Genre_bg/Sci-fi1.jpeg",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Sci-fi1.png",
   },
   {
     Icon: Eye,
@@ -70,7 +70,7 @@ const genres = [
     color: "#00BFA6",
     gradient: "from-[#00BFA6] to-[#00D4B5]",
     example: "The detective found a clue that changed everything...",
-    bgImage: "/Genre_bg/Mystery.png",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Mystery1.png",
   },
   {
     Icon: Crown,
@@ -80,7 +80,7 @@ const genres = [
     gradient: "from-[#FFD166] to-[#FFE066]",
     example:
       "Every phone call could reveal the truth—or destroy everything...",
-    bgImage: "/Genre_bg/Suspense.png",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Suspense_1.png",
   },
   {
     Icon: Drama,
@@ -89,8 +89,8 @@ const genres = [
     color: "#E17055",
     gradient: "from-[#E17055] to-[#E88E76]",
     example:
-      "A typical day at school, until I realized something incredible...",
-    bgImage: "/Genre_bg/Slice_of_life1.jpeg",
+      "A typical morning, until I realized...",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Slice_of_life2.png",
   },
   {
     Icon: Sparkles,
@@ -100,7 +100,7 @@ const genres = [
     gradient: "from-[#A29BFE] to-[#B8B3FF]",
     example:
       "Ever since the flowers started singing, nothing was the same...",
-    bgImage: "/Genre_bg/Adventure1.jpeg",
+    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Adventure1.png",
   },
 ];
 
