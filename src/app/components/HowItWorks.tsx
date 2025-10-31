@@ -1,437 +1,150 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 
 export default function HowItWorks() {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { amount: 0.2 });
-
   const steps = [
     {
       title: "Choose Your Seed",
-      description:
-        "Pick a title, setting, and hero to spark your adventure. Your imagination is the only limit.",
+      description: "Pick a title, setting, and hero to spark your adventure.",
       image: "/scroll1.png",
-      gradient: "linear-gradient(135deg, rgba(255,118,117,0.85), rgba(255,209,102,0.85))",
-      stepColor: "#FF7675",
-      shadowColor: "rgba(255,118,117,0.6)",
+      color: "#E64A19", // Vibrant orange-red
+      glow: "rgba(230,74,25,0.5)",
     },
     {
       title: "Watch AI Spin the Tale",
-      description:
-        "Watch as our AI transforms your idea into an immersive, interactive story with endless possibilities.",
+      description: "Our AI transforms your idea into an immersive, interactive story.",
       image: "/crystal-ball1.png",
-      gradient: "linear-gradient(135deg, rgba(0,191,166,0.85), rgba(116,192,252,0.85))",
-      stepColor: "#00BFA6",
-      shadowColor: "rgba(0,191,166,0.6)",
+      color: "#00796B", // Deep teal
+      glow: "rgba(0,121,107,0.5)",
     },
     {
-      title: "Interact and Explore",
-      description:
-        "Make choices, discover hidden paths, and share your unique adventure with friends and fellow dreamers.",
+      title: "Interact & Explore",
+      description: "Make choices, discover hidden paths, and share your tale.",
       image: "/telescope1.png",
-      gradient: "linear-gradient(135deg, rgba(108,92,231,0.85), rgba(255,209,102,0.85))",
-      stepColor: "#6C5CE7",
-      shadowColor: "rgba(108,92,231,0.6)",
+      color: "#5E35B1", // Rich purple
+      glow: "rgba(94,53,177,0.5)",
     },
   ];
 
-  const [sparkles, setSparkles] = useState<Array<{
-    id: number;
-    top: number;
-    left: number;
-    size: number;
-    color: string;
-    delay: number;
-  }>>([]);
-
-  const [floatingOrbs, setFloatingOrbs] = useState<Array<{
-    id: number;
-    top: number;
-    left: number;
-    size: number;
-    color: string;
-    duration: number;
-  }>>([]);
-
-  useEffect(() => {
-    // Sparkles
-    setSparkles(
-      Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        top: Math.random() * 100,
-        left: Math.random() * 100,
-        size: Math.random() * 2 + 1,
-        color: ["#FFD166", "#74C0FC", "#FF7675", "#6C5CE7", "#FFFFFF"][Math.floor(Math.random() * 5)],
-        delay: Math.random() * 3,
-      }))
-    );
-
-    // Floating orbs
-    setFloatingOrbs(
-      Array.from({ length: 8 }, (_, i) => ({
-        id: i,
-        top: Math.random() * 100,
-        left: Math.random() * 100,
-        size: Math.random() * 40 + 60,
-        color: ["rgba(255,209,102,0.15)", "rgba(116,192,252,0.15)", "rgba(108,92,231,0.15)"][Math.floor(Math.random() * 3)],
-        duration: Math.random() * 10 + 15,
-      }))
-    );
-  }, []);
-
   return (
-    <section ref={sectionRef} className="relative pt-16 pb-24 overflow-hidden">
-      {/* Magical background layers */}
-      <div className="absolute inset-0 -z-10 pointer-events-none">
-        {/* Animated gradient overlay */}
-        <motion.div
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: "radial-gradient(circle at 50% 50%, rgba(108,92,231,0.2), transparent 70%)",
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.2, 0.35, 0.2],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
+    <section className="relative pt-24 pb-32 overflow-hidden">
+      {/* Subtle animated accent orb (kept for depth, but optional) */}
+      <motion.div
+        className="absolute inset-0 opacity-20 pointer-events-none"
+        style={{
+          background: "radial-gradient(circle at 30% 70%, #FFD54F40, transparent 70%)",
+        }}
+        animate={{ scale: [1, 1.3, 1] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      />
 
-        {/* Floating orbs */}
-        {floatingOrbs.map((orb) => (
-          <motion.div
-            key={`orb-${orb.id}`}
-            className="absolute rounded-full blur-2xl"
-            style={{
-              top: `${orb.top}%`,
-              left: `${orb.left}%`,
-              width: `${orb.size}px`,
-              height: `${orb.size}px`,
-              backgroundColor: orb.color,
-            }}
-            animate={{
-              y: [0, -60, 0],
-              x: [0, 30, -30, 0],
-              scale: [1, 1.3, 0.9, 1],
-            }}
-            transition={{
-              duration: orb.duration,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-
-        {/* Enhanced sparkles with star effect */}
-        {sparkles.map((s) => {
-          const yAnim = [-15 + Math.random() * -10, 10 + Math.random() * 10, -15 + Math.random() * -10];
-          const xAnim = [-10 + Math.random() * -5, 10 + Math.random() * 5, -10 + Math.random() * -5];
-          const opacityAnim = [0.2, 1, 0.2];
-          const scaleAnim = [0.3, 1.2, 0.3];
-
-          return (
-            <motion.div
-              key={s.id}
-              className="absolute"
-              style={{
-                top: `${s.top}%`,
-                left: `${s.left}%`,
-                width: `${s.size * 8}px`,
-                height: `${s.size * 8}px`,
-                pointerEvents: "none",
-              }}
-              animate={{
-                y: yAnim,
-                x: xAnim,
-                scale: scaleAnim,
-                opacity: opacityAnim,
-                rotate: [0, 180, 360],
-              }}
-              transition={{
-                duration: 4 + Math.random() * 4,
-                repeat: Infinity,
-                repeatType: "mirror",
-                delay: s.delay,
-                ease: "easeInOut",
-              }}
-            >
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `radial-gradient(circle, ${s.color} 0%, transparent 70%)`,
-                  filter: "blur(1px)",
-                }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  clipPath: "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-                  backgroundColor: s.color,
-                  filter: "blur(0.5px)",
-                }}
-              />
-            </motion.div>
-          );
-        })}
-      </div>
-
-      <div className="container mx-auto px-6 text-center relative">
-        {/* Magical header with glow effect */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
+      <div className="relative max-w-6xl mx-auto px-6 text-center">
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
+          style={{ fontFamily: "var(--font-fredoka)" }}
         >
-          <h2
-            className="text-6xl font-bold mb-6 text-[#6C5CE7] relative inline-block"
-            style={{ fontFamily: "var(--font-fredoka)" }}
-          >
-            How It Works ✨
+          How It Works
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="text-lg text-gray-700 max-w-2xl mx-auto mb-16"
+        >
+          Three simple steps to unleash your imagination.
+        </motion.p>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {steps.map((step, i) => (
             <motion.div
-              className="absolute -bottom-2 left-0 right-0 h-1 rounded-full"
-              style={{
-                background: "linear-gradient(90deg, #FF7675, #FFD166, #74C0FC, #6C5CE7)",
-              }}
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 1.2, delay: 0.3 }}
-            />
-          </h2>
-          <motion.p
-            className="text-xl text-gray-600 mb-16 max-w-2xl mx-auto"
-            style={{ fontFamily: "var(--font-poppins)" }}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            Embark on a journey where imagination meets technology
-          </motion.p>
-        </motion.div>
-
-        <div className="flex flex-col md:flex-row justify-center items-start gap-12">
-          {steps.map((step, index) => (
-            <div
-              key={index}
-              className="relative w-full md:w-1/3"
-              style={{
-                perspective: "1500px",
-              }}
+              transition={{ delay: i * 0.15 }}
+              className="group relative p-8 rounded-3xl bg-white/80 backdrop-blur-md border border-gray-200 shadow-lg"
+              whileHover={{ y: -8, scale: 1.03, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
             >
+              {/* Glow on hover */}
+              <div
+                className="absolute -inset-1 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl"
+                style={{ background: `linear-gradient(135deg, ${step.glow}, transparent)` }}
+              />
+
+              {/* Step number */}
               <motion.div
-                className="relative w-full"
+                className="text-5xl font-extrabold mb-6"
                 style={{
-                  minHeight: "500px",
+                  color: step.color,
+                  textShadow: `0 0 20px ${step.glow}`,
                 }}
-                initial={{ opacity: 0, y: 120, scale: 0.8 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ 
-                  duration: 0.8, 
-                  delay: index * 0.3, 
-                  ease: "easeOut",
+                animate={{
+                  textShadow: [
+                    "0 0 10px transparent",
+                    `0 0 30px ${step.glow}`,
+                    "0 0 10px transparent",
+                  ],
                 }}
-                whileHover={{ 
-                  y: -15,
-                  scale: 1.05,
-                }}
+                transition={{ duration: 3, repeat: Infinity }}
               >
-                {/* SINGLE CARD FACE (NO FLIP) */}
-                <motion.div
-                  className="absolute inset-0 p-10 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] group"
-                  style={{
-                    background: step.gradient,
-                    backfaceVisibility: "hidden",
-                  }}
-                >
-                  {/* Magical border glow */}
-                  <motion.div
-                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{
-                      background: `linear-gradient(135deg, transparent, ${step.shadowColor}, transparent)`,
-                      filter: "blur(20px)",
-                      transform: "translateZ(-10px)",
-                    }}
-                  />
-
-                  {/* Floating particles around card */}
-                  {[...Array(6)].map((_, i) => (
-                    <motion.div
-                      key={`particle-${index}-${i}`}
-                      className="absolute w-2 h-2 rounded-full opacity-0 group-hover:opacity-100"
-                      style={{
-                        backgroundColor: step.stepColor,
-                        top: `${20 + i * 15}%`,
-                        left: i % 2 === 0 ? "-10px" : "calc(100% + 10px)",
-                      }}
-                      animate={{
-                        y: [0, -20, 0],
-                        x: i % 2 === 0 ? [-5, 5, -5] : [5, -5, 5],
-                        opacity: [0, 1, 0],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: i * 0.3,
-                      }}
-                    />
-                  ))}
-
-                  {/* Step number with magical effect */}
-                  <motion.div
-                    className="text-4xl font-extrabold mb-6 relative z-10"
-                    style={{
-                      fontFamily: "var(--font-fredoka)",
-                      color: step.stepColor,
-                      WebkitTextStroke: "1px rgba(45,52,54,0.5)",
-                      textShadow: "2px 2px 4px rgba(0,0,0,0.4)",
-                    }}
-                    animate={{
-                      textShadow: [
-                        "2px 2px 4px rgba(0,0,0,0.4)",
-                        `2px 2px 20px ${step.shadowColor}`,
-                        "2px 2px 4px rgba(0,0,0,0.4)",
-                      ],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    Step {index + 1}
-                  </motion.div>
-
-                  {/* Enhanced glow behind image */}
-                  <motion.div
-                    className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full opacity-40 blur-3xl"
-                    style={{ background: step.gradient }}
-                    animate={{
-                      scale: [1, 1.3, 1],
-                      opacity: [0.4, 0.7, 0.4],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-
-                  {/* Image with hover animation */}
-                  <motion.div 
-                    className="flex justify-center mb-6 relative z-10"
-                    whileHover={{ 
-                      scale: 1.15, 
-                      rotate: [0, -5, 5, 0],
-                    }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <div className="relative w-28 h-28 z-10 drop-shadow-2xl">
-                      <Image
-                        src={step.image}
-                        alt={`${step.title} icon`}
-                        fill
-                        sizes="112px"
-                        className="object-contain"
-                      />
-                    </div>
-                    {/* Rotating ring around image */}
-                    <motion.div
-                      className="absolute inset-0 rounded-full border-2 opacity-0 group-hover:opacity-50"
-                      style={{ borderColor: step.stepColor }}
-                      animate={{
-                        rotate: 360,
-                        scale: [1, 1.2, 1],
-                      }}
-                      transition={{
-                        rotate: { duration: 4, repeat: Infinity, ease: "linear" },
-                        scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                      }}
-                    />
-                  </motion.div>
-
-                  {/* Step title */}
-                  <h4
-                    className="text-3xl font-bold mb-4 text-white drop-shadow-lg"
-                    style={{ fontFamily: "var(--font-fredoka)" }}
-                  >
-                    {step.title}
-                  </h4>
-
-                  {/* NEW DESCRIPTION BELOW TITLE */}
-                  <p
-                    className="text-lg leading-relaxed text-white/95 drop-shadow-md text-center relative z-10 px-4"
-                    style={{ fontFamily: "var(--font-poppins)" }}
-                  >
-                    {step.description}
-                  </p>
-
-                  {/* Magical shine effect on hover */}
-                  <motion.div
-                    className="absolute top-0 left-0 w-full h-full rounded-3xl pointer-events-none overflow-hidden"
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                  >
-                    <motion.div
-                      className="absolute inset-0"
-                      style={{
-                        background: "linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)",
-                      }}
-                      animate={{
-                        x: ["-100%", "200%"],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatDelay: 1,
-                      }}
-                    />
-                  </motion.div>
-                </motion.div>
+                {i + 1}
               </motion.div>
-            </div>
+
+              {/* Image */}
+              <motion.div
+                className="relative w-32 h-32 mx-auto mb-6"
+                whileHover={{ rotate: [0, -5, 5, 0], scale: 1.15 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Image
+                  src={step.image}
+                  alt={step.title}
+                  fill
+                  className="object-contain drop-shadow-xl"
+                />
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2 opacity-0 group-hover:opacity-60 transition-opacity"
+                  style={{ borderColor: step.color }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                />
+              </motion.div>
+
+              {/* Title & description */}
+              <h3
+                className="text-2xl font-bold text-gray-900 mb-3"
+                style={{ fontFamily: "var(--font-fredoka)" }}
+              >
+                {step.title}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">{step.description}</p>
+            </motion.div>
           ))}
         </div>
+      </div>
 
-        {/* Enhanced wavy connector with animation */}
-        <motion.svg
-          className="absolute left-0 right-0 top-full pointer-events-none"
-          width="100%"
-          height="140"
-          viewBox="0 0 1440 140"
+      {/* Wave to next section - solid color compatible */}
+      {/* <div className="absolute bottom-0 left-0 right-0">
+        <svg
+          viewBox="0 0 1440 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 0.8 }}
+          preserveAspectRatio="none"
+          className="w-full h-32 md:h-40"
         >
-          <motion.path
-            d="M0 90 C360 0, 1080 140, 1440 50 V140 H0 V90 Z"
-            fill="rgba(255, 209, 102, 0.2)"
-            animate={{
-              d: [
-                "M0 90 C360 0, 1080 140, 1440 50 V140 H0 V90 Z",
-                "M0 70 C360 120, 1080 20, 1440 70 V140 H0 V70 Z",
-                "M0 90 C360 0, 1080 140, 1440 50 V140 H0 V90 Z",
-              ],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+          <path
+            d="M0 70 Q360 120 720 70 T1440 70 V120 H0 V70Z"
+            fill="#FFF8F1"
           />
-        </motion.svg>
-      </div>
+        </svg>
+      </div> */}
     </section>
   );
 }

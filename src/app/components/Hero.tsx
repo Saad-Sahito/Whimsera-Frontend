@@ -1,190 +1,234 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Sparkles, ArrowDown } from "lucide-react";
 import { useState } from "react";
-import { Sparkles, BookOpen, Wand2 } from "lucide-react";
 
-export default function HeroRedesign() {
-  const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+export default function Hero() {
+  const [hoveredWord, setHoveredWord] = useState<number | null>(null);
 
-  const features = [
-    { icon: Sparkles, text: "AI-Powered Stories" },
-    { icon: BookOpen, text: "Your Choices Matter" },
-    { icon: Wand2, text: "Endless Adventures" }
+  const heroWords = [
+    { text: "Create", color: "#6C5CE7" },
+    { text: "Explore", color: "#00BFA6" },
+    { text: "Choose", color: "#FF7675" },
+    { text: "Adventure", color: "#FFD166" }
   ];
 
+  const scrollToContent = () => {
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: "smooth"
+    });
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#FFF8F1] via-[#E5E5E5]/30 to-[#74C0FC]/10">
-      
-      {/* Subtle animated background elements */}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute rounded-full"
+            className="absolute rounded-full blur-3xl"
             style={{
-              width: Math.random() * 200 + 50,
-              height: Math.random() * 200 + 50,
+              width: Math.random() * 300 + 100,
+              height: Math.random() * 300 + 100,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               background: [
-                "rgba(108,92,231,0.03)",
-                "rgba(0,191,166,0.03)",
-                "rgba(255,209,102,0.03)"
-              ][i % 3],
-              filter: "blur(40px)"
+                "rgba(108,92,231,0.08)", 
+                "rgba(0,191,166,0.08)", 
+                "rgba(255,118,117,0.08)",
+                "rgba(255,209,102,0.08)"
+              ][i % 4],
             }}
-            animate={{
-              y: [0, -30, 0],
-              x: [0, 20, 0],
-              scale: [1, 1.1, 1]
+            animate={{ 
+              y: [0, -40, 0], 
+              x: [0, 30, 0], 
+              scale: [1, 1.15, 1] 
             }}
-            transition={{
-              duration: 15 + Math.random() * 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: Math.random() * 5
+            transition={{ 
+              duration: 20 + Math.random() * 10, 
+              repeat: Infinity, 
+              ease: "easeInOut", 
+              delay: Math.random() * 5 
             }}
           />
         ))}
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
-        
-        {/* Eyebrow text */}
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+        {/* Eyebrow */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#6C5CE7]/10 to-[#00BFA6]/10 border border-[#6C5CE7]/20 mb-6"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/40 backdrop-blur-md border border-white/60 mb-8 shadow-lg"
         >
-          <Sparkles className="w-4 h-4 text-[#6C5CE7]" />
-          <span className="text-sm font-medium text-[#2D3436]">
-            Where Imagination Comes to Life
+          <Sparkles className="w-5 h-5 text-[#6C5CE7]" />
+          <span className="text-sm font-semibold text-[#2D3436]" style={{ fontFamily: "var(--font-poppins)" }}>
+            AI-Powered Interactive Storytelling
           </span>
         </motion.div>
 
-        {/* Main headline - shorter and punchier */}
-        <motion.h1
+        {/* Main Headline - Large and Bold */}
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-5xl md:text-7xl font-bold text-[#2D3436] mb-6 leading-tight"
-          style={{ fontFamily: "var(--font-fredoka)" }}
+          className="mb-8"
         >
-          Your Story,
-          <br />
-          <span className="bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] bg-clip-text text-transparent">
-            Your Adventure
-          </span>
-        </motion.h1>
+          <h1
+            className="text-6xl md:text-7xl lg:text-8xl font-bold text-[#2D3436] leading-tight mb-6"
+            style={{ fontFamily: "var(--font-fredoka)" }}
+          >
+            Where Stories
+            <br />
+            <span className="bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] bg-clip-text text-transparent">
+              Come Alive
+            </span>
+          </h1>
+
+          {/* Animated word carousel */}
+          <div className="flex items-center justify-center gap-3 flex-wrap mb-8">
+            {heroWords.map((word, i) => (
+              <motion.span
+                key={i}
+                onHoverStart={() => setHoveredWord(i)}
+                onHoverEnd={() => setHoveredWord(null)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className="text-3xl md:text-4xl font-bold cursor-default transition-all duration-300"
+                style={{ 
+                  fontFamily: "var(--font-fredoka)",
+                  color: hoveredWord === i ? word.color : "#2D3436",
+                  transform: hoveredWord === i ? "scale(1.1)" : "scale(1)"
+                }}
+              >
+                {word.text}
+                {i < heroWords.length - 1 && (
+                  <span className="text-[#2D3436]/30 mx-2">•</span>
+                )}
+              </motion.span>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Subheadline */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-xl md:text-2xl text-[#2D3436]/70 mb-12 max-w-2xl mx-auto"
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="text-xl md:text-2xl text-[#2D3436]/70 mb-12 max-w-3xl mx-auto leading-relaxed"
           style={{ fontFamily: "var(--font-nunito)" }}
         >
-          Create interactive stories powered by AI. Every choice shapes your unique tale.
+          Every choice shapes your unique tale. Powered by AI that understands narrative, emotion, and your imagination.
         </motion.p>
 
         {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
         >
-          <button className="group relative px-8 py-4 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <span className="relative z-10">Start Creating Free</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00BFA6] to-[#6C5CE7] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
-          
-          <button className="px-8 py-4 border-2 border-[#6C5CE7] text-[#6C5CE7] rounded-full font-semibold text-lg hover:bg-[#6C5CE7] hover:text-white transition-all duration-300">
-            See How It Works
-          </button>
+          <motion.button
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="group relative px-10 py-5 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] text-white rounded-full font-bold text-lg shadow-2xl overflow-hidden"
+            style={{ fontFamily: "var(--font-poppins)" }}
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              Start Your Adventure
+              <Sparkles className="w-5 h-5" />
+            </span>
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-[#00BFA6] to-[#6C5CE7]"
+              initial={{ x: "100%" }}
+              whileHover={{ x: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+          </motion.button>
+
+          <motion.button
+            onClick={scrollToContent}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-10 py-5 bg-white/60 backdrop-blur-md border-2 border-[#2D3436]/20 text-[#2D3436] rounded-full font-bold text-lg hover:bg-white hover:border-[#6C5CE7] transition-all shadow-lg"
+            style={{ fontFamily: "var(--font-poppins)" }}
+          >
+            Explore Features
+          </motion.button>
         </motion.div>
 
-        {/* Feature pills */}
+        {/* Feature highlights - minimal pills */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="flex flex-wrap justify-center gap-4"
+          transition={{ duration: 0.8, delay: 1 }}
+          className="flex flex-wrap justify-center gap-4 text-sm"
         >
-          {features.map((feature, i) => {
-            const Icon = feature.icon;
-            return (
-              <motion.div
-                key={i}
-                onHoverStart={() => setHoveredFeature(i)}
-                onHoverEnd={() => setHoveredFeature(null)}
-                className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-[#E5E5E5] cursor-default shadow-sm"
-                whileHover={{ scale: 1.05, y: -2 }}
-              >
-                <Icon 
-                  className="w-5 h-5 transition-colors duration-300"
-                  style={{ 
-                    color: hoveredFeature === i ? "#6C5CE7" : "#2D3436"
-                  }}
-                />
-                <span className="text-sm font-medium text-[#2D3436]">
-                  {feature.text}
-                </span>
-              </motion.div>
-            );
-          })}
+          {[
+            "Unlimited Stories",
+            "Every Genre Imaginable", 
+            "Your Choices Matter",
+            "AI-Powered Narrative"
+          ].map((feature, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.1 + i * 0.1 }}
+              className="px-4 py-2 bg-white/40 backdrop-blur-md rounded-full border border-white/60 text-[#2D3436]/80 font-medium shadow-sm"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              {feature}
+            </motion.div>
+          ))}
         </motion.div>
+      </div>
 
-        {/* Floating story preview card */}
+      {/* Scroll indicator */}
+      {/* <motion.button
+        onClick={scrollToContent}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 1.5 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 group cursor-pointer"
+      >
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="mt-16 max-w-3xl mx-auto"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center gap-2"
         >
-          <div className="relative bg-white rounded-2xl shadow-2xl p-8 border border-[#E5E5E5]">
-            {/* Glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#6C5CE7]/20 via-[#00BFA6]/20 to-[#FFD166]/20 rounded-2xl blur-lg opacity-50" />
-            
-            <div className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6C5CE7] to-[#00BFA6] flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#2D3436]">The Enchanted Forest</h3>
-                  <p className="text-sm text-[#2D3436]/60">Adventure • Fantasy</p>
-                </div>
-              </div>
-              
-              <p className="text-[#2D3436]/80 text-left leading-relaxed">
-                You stand at the edge of a mysterious forest. Ancient trees whisper secrets in the wind. 
-                <span className="text-[#6C5CE7] font-medium"> What do you do?</span>
-              </p>
-              
-              <div className="flex gap-3 mt-4">
-                <div className="flex-1 p-3 bg-[#FFF8F1] rounded-lg border border-[#E5E5E5] text-sm text-[#2D3436]/70 hover:border-[#6C5CE7] transition-colors cursor-pointer">
-                  🗡️ Enter boldly
-                </div>
-                <div className="flex-1 p-3 bg-[#FFF8F1] rounded-lg border border-[#E5E5E5] text-sm text-[#2D3436]/70 hover:border-[#6C5CE7] transition-colors cursor-pointer">
-                  👀 Observe quietly
-                </div>
-              </div>
-            </div>
+          <span 
+            className="text-sm text-[#2D3436]/60 font-medium group-hover:text-[#6C5CE7] transition-colors"
+            style={{ fontFamily: "var(--font-poppins)" }}
+          >
+            Discover More
+          </span>
+          <div className="w-12 h-12 rounded-full bg-white/60 backdrop-blur-md border border-white/80 flex items-center justify-center shadow-lg group-hover:bg-[#6C5CE7] group-hover:border-[#6C5CE7] transition-all">
+            <ArrowDown className="w-5 h-5 text-[#2D3436] group-hover:text-white transition-colors" />
           </div>
         </motion.div>
-      </div>
+      </motion.button> */}
 
-      {/* Bottom wave transition */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 50 Q360 0 720 50 T1440 50 V120 H0 V50Z" fill="white" />
+      {/* Subtle wave transition */}
+      {/* <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+        <svg 
+          viewBox="0 0 1440 120" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-24 opacity-20"
+        >
+          <path 
+            d="M0 50 Q360 0 720 50 T1440 50 V120 H0 V50Z" 
+            fill="currentColor"
+            className="text-[#2D3436]"
+          />
         </svg>
-      </div>
+      </div> */}
     </section>
   );
 }

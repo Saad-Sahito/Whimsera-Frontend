@@ -86,32 +86,11 @@ export default function Navbar() {
         Whimsera
       </Link>
 
-      {/* Right side buttons */}
-      <div className="flex flex-wrap items-center space-x-3 sm:space-x-4 md:space-x-6 relative z-10">
-        <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
-          Stories
-        </button>
-        <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
-          Pricing
-        </button>
-        <Link href="/feedback">
-          <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
-            Give Feedback
-          </button>
-        </Link>
-
-        {/* Conditional rendering */}
-        {!isAuthenticated ? (
-          <Link href="/login">
-            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-md font-poppins font-bold text-sm sm:text-base md:text-lg bg-[#FFD166] text-[#2D3436] hover:bg-[#FF7675] hover:text-white transition">
-              Start For Free
-            </button>
-          </Link>
-        ) : (
-          <Link href="/dashboard">
-            <FaUserCircle className="text-white text-2xl sm:text-3xl md:text-4xl hover:text-[#FFD166] transition-colors cursor-pointer" />
-          </Link>
-        )}
+      {/* Right side - Coming Soon! */}
+      <div className="flex items-center relative z-10">
+        <span className="text-white text-sm sm:text-base md:text-lg lg:text-xl font-poppins font-bold opacity-90">
+          Coming Soon!
+        </span>
       </div>
     </nav>
   );

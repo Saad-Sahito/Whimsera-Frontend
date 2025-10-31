@@ -32,7 +32,10 @@
     --foreground: #ededed;
   }
 }
-
+/* Add to globals.css */
+.light-section .rounded-full {
+  background: radial-gradient(circle, rgba(255,209,102,0.2) 0%, rgba(116,192,252,0.15) 70%, transparent 100%) !important;
+}
 /* === Smooth Scroll === */
 html {
   scroll-behavior: smooth;

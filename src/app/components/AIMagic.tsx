@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Brain, MessageCircle, Globe, Zap } from "lucide-react";
+import { Brain, MessageCircle, Globe, Zap, ArrowRight } from "lucide-react";
 
 const features = [
   {
@@ -9,44 +9,50 @@ const features = [
     title: "Narrative Intelligence",
     desc: "Every tale unfolds through deep understanding of tone, pacing, and your choices.",
     color: "#6C5CE7",
-    gradient: "from-[#6C5CE7]/10 to-[#6C5CE7]/5"
+    gradient: "from-[#6C5CE7]/15 to-[#6C5CE7]/5",
   },
   {
     Icon: MessageCircle,
     title: "Emotional Dialogue",
     desc: "Characters remember what you say — and how you make them feel.",
     color: "#FF7675",
-    gradient: "from-[#FF7675]/10 to-[#FF7675]/5"
+    gradient: "from-[#FF7675]/15 to-[#FF7675]/5",
   },
   {
     Icon: Globe,
     title: "Persistent Worlds",
     desc: "Whimsera remembers your adventures, evolving worlds and relationships over time.",
     color: "#00BFA6",
-    gradient: "from-[#00BFA6]/10 to-[#00BFA6]/5"
+    gradient: "from-[#00BFA6]/15 to-[#00BFA6]/5",
   },
   {
     Icon: Zap,
     title: "Instant Story Crafting",
     desc: "Begin new stories in seconds, powered by adaptive AI fine-tuned for creativity.",
     color: "#FFD166",
-    gradient: "from-[#FFD166]/10 to-[#FFD166]/5"
+    gradient: "from-[#FFD166]/15 to-[#FFD166]/5",
   },
 ];
 
 export default function AIMagicRedesign() {
   return (
-    <section className="relative py-24 px-8 bg-gradient-to-b from-white via-[#FFF8F1] to-white overflow-hidden">
-      
-      {/* Subtle background decoration */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-[#6C5CE7]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#00BFA6]/10 rounded-full blur-3xl" />
+    <section className="relative py-24 px-8 overflow-hidden">
+      {/* Subtle animated background blobs */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none">
+        <motion.div
+          className="absolute top-16 left-8 w-80 h-80 bg-[#6C5CE7]/20 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 10, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-16 right-8 w-96 h-96 bg-[#00BFA6]/20 rounded-full blur-3xl"
+          animate={{ scale: [1.1, 1, 1.1] }}
+          transition={{ duration: 12, repeat: Infinity }}
+        />
       </div>
 
       <div className="relative max-w-7xl mx-auto">
-        
-        {/* Section header */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -54,105 +60,115 @@ export default function AIMagicRedesign() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#6C5CE7]/10 to-[#00BFA6]/10 border border-[#6C5CE7]/20 mb-4">
-            <Zap className="w-4 h-4 text-[#6C5CE7]" />
-            <span className="text-sm font-medium text-[#2D3436]">Powered by Advanced AI</span>
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#6C5CE7]/15 to-[#00BFA6]/15 border-2 border-[#6C5CE7]/30 mb-5 shadow-sm">
+            <Zap className="w-5 h-5 text-[#6C5CE7]" />
+            <span className="text-sm font-bold text-[#2D3436]">Powered by Advanced AI</span>
           </div>
-          
-          <h2 
+
+          <h2
             className="text-4xl md:text-5xl font-bold text-[#2D3436] mb-4"
             style={{ fontFamily: "var(--font-fredoka)" }}
           >
             The Magic Behind
-            <span className="block mt-2 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] bg-clip-text text-transparent">
+            <span className="block mt-2 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#00BFA6] bg-clip-text text-transparent text-5xl md:text-6xl">
               Every Story
             </span>
           </h2>
-          
-          <p className="text-lg text-[#2D3436]/70 max-w-2xl mx-auto">
+
+          <p className="text-lg text-[#2D3436]/75 max-w-2xl mx-auto font-medium">
             Beneath every adventure lies a powerful creative engine that listens, learns, and adapts to your imagination
           </p>
         </motion.div>
 
-        {/* Features grid */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        {/* Feature cards */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {features.map((feature, i) => {
             const Icon = feature.Icon;
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ duration: 0.6, delay: i * 0.15 }}
+                whileHover={{ y: -12, scale: 1.03 }}
                 className="group relative"
               >
-                {/* Glow effect on hover */}
-                <div 
-                  className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${feature.color}40, ${feature.color}20)` 
+                {/* Hover glow */}
+                <div
+                  className="absolute -inset-1 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
+                  style={{
+                    background: `linear-gradient(135deg, ${feature.color}50, ${feature.color}20)`,
                   }}
                 />
-                
-                {/* Card content */}
-                <div className={`relative bg-gradient-to-br ${feature.gradient} backdrop-blur-sm rounded-2xl p-8 border border-[#E5E5E5] group-hover:border-[${feature.color}]/30 transition-all duration-300 h-full`}>
-                  
-                  {/* Icon */}
-                  <div 
-                    className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${feature.color}20, ${feature.color}10)` 
+
+                {/* Card */}
+                <div
+                  className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-xl transition-all duration-300 h-full flex flex-col"
+                  style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}
+                >
+                  {/* Icon with pulse */}
+                  <motion.div
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+                    style={{
+                      background: `linear-gradient(135deg, ${feature.color}25, ${feature.color}10)`,
+                      boxShadow: `0 0 20px ${feature.color}40`,
                     }}
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <Icon 
-                      className="w-7 h-7" 
-                      style={{ color: feature.color }}
-                    />
-                  </div>
-                  
-                  {/* Title */}
-                  <h3 
-                    className="text-xl font-bold text-[#2D3436] mb-3"
-                    style={{ fontFamily: "var(--font-fredoka)" }}
+                    <Icon className="w-8 h-8" style={{ color: feature.color }} />
+                  </motion.div>
+
+                  {/* Title – colored gradient */}
+                  <h3
+                    className="text-2xl font-bold mb-3"
+                    style={{
+                      fontFamily: "var(--font-fredoka)",
+                      background: `linear-gradient(90deg, ${feature.color}, ${feature.color}dd)`,
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      color: "transparent",
+                    }}
                   >
                     {feature.title}
                   </h3>
-                  
+
                   {/* Description */}
-                  <p className="text-[#2D3436]/70 leading-relaxed">
+                  <p className="text-[#2D3436]/80 leading-relaxed flex-1">
                     {feature.desc}
                   </p>
-                  
-                  {/* Decorative corner accent */}
-                  <div 
-                    className="absolute top-0 right-0 w-20 h-20 opacity-10 group-hover:opacity-20 transition-opacity duration-300"
-                    style={{
-                      background: `radial-gradient(circle at top right, ${feature.color}, transparent)`,
-                      borderTopRightRadius: '1rem'
-                    }}
-                  />
+
+                  {/* REMOVED: decorative corner accent */}
                 </div>
               </motion.div>
             );
           })}
         </div>
 
-        {/* Bottom CTA */}
+        {/* Prominent CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-center mt-16"
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="text-center mt-20"
         >
-          <p className="text-[#2D3436]/70 mb-6">
+          <p className="text-[#2D3436]/80 text-lg font-medium mb-6">
             Ready to experience AI-powered storytelling?
           </p>
-          <button className="px-8 py-4 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] text-white rounded-full font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105">
+
+          {/* <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#00BFA6] text-white font-bold text-xl rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300"
+            style={{
+              boxShadow: "0 12px 35px rgba(108, 92, 231, 0.35)",
+            }}
+          >
             Try It Now
-          </button>
+            <ArrowRight className="w-6 h-6" />
+          </motion.button> */}
         </motion.div>
       </div>
     </section>
