@@ -50,11 +50,11 @@ body {
 }
 
 /* === Global Wand Cursor === */
-*,
+/* *,
 *::before,
 *::after {
   cursor: url("/cursors/wand-rotated.png") 5 0, auto !important;
-}
+} */
 
 /* === Hover Glow Effect === */
 a:hover,

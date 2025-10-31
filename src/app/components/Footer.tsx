@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+//import Link from "next/link";
 import { useState } from "react";
 
 type Ripple = {
@@ -100,32 +100,11 @@ export default function Footer() {
         </button>
       </motion.div>
 
-      {/* Right side — navigation buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        viewport={{ once: true }}
-        className="flex items-center gap-4 sm:gap-6 relative z-10"
-      >
-        {/* ✅ Use Next.js Link for About page */}
-        <Link
-          href="/about"
-          className="text-white text-sm sm:text-base md:text-lg font-poppins font-semibold border-b-2 border-transparent hover:border-[#FFD166] transition"
-        >
-          About
-        </Link>
 
-        <Link href="/feedback">
-          <button className="bg-[#FFD166] text-[#2D3436] px-4 sm:px-5 py-1 sm:py-2 rounded-md font-poppins font-bold text-sm sm:text-base md:text-lg hover:bg-[#FF7675] hover:text-white transition">
-            Give Feedback
-          </button>
-        </Link>
-      </motion.div>
 
       {/* Bottom center — copyright */}
       <div className="absolute bottom-2 left-0 right-0 text-center text-xs sm:text-sm text-white/80 font-nunito">
-        © {new Date().getFullYear()} Whimsera (Pre-Alpha Version). All rights reserved.
+        © {new Date().getFullYear()} Whimsera. All rights reserved.
       </div>
     </footer>
   );
