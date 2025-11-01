@@ -12,6 +12,7 @@ import {
   Drama,
 } from "lucide-react";
 
+// --- No changes to the genres array ---
 const genres = [
   {
     Icon: Sparkles,
@@ -113,8 +114,16 @@ export default function GenreShowcase() {
   }, []);
 
   return (
-    <section className="relative min-h-screen py-12 px-6 overflow-hidden flex flex-col justify-center">
-      {/* ---------- BACKGROUND IMAGE ---------- */}
+    <section 
+      // CHANGE: Reduced horizontal padding on small screens (px-4)
+      className="relative min-h-screen py-12 px-4 sm:px-6 overflow-hidden flex flex-col justify-center"
+    >
+      {/* ---------- BACKGROUND IMAGE ----------
+        No change needed here. `bg-cover` and `bg-center` already achieve
+        your goal. It scales the image to fill the container while
+        maintaining aspect ratio, which "crops the sides" on tall (phone) 
+        screens. It does not "squeeze" or distort the image.
+      */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeGenre}
@@ -134,7 +143,7 @@ export default function GenreShowcase() {
         </motion.div>
       </AnimatePresence>
 
-      {/* ---------- FLOATING BLOBS ---------- */}
+      {/* ---------- FLOATING BLOBS (No changes) ---------- */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute top-20 right-10 w-96 h-96 bg-[#74C0FC]/10 rounded-full blur-3xl"
@@ -149,7 +158,7 @@ export default function GenreShowcase() {
       </div>
 
       <div className="relative max-w-7xl mx-auto flex flex-col items-center">
-        {/* ---------- HEADER ---------- */}
+        {/* ---------- HEADER (No changes) ---------- */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isLoaded ? { opacity: 1, y: 0 } : {}}
@@ -167,11 +176,13 @@ export default function GenreShowcase() {
             </span>
           </motion.div>
           <h2
-            className="text-4xl md:text-5xl font-bold text-[#FFF8F1] mb-3"
+            // CHANGE: Added responsive font sizes for small screens
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#FFF8F1] mb-3"
             style={{ fontFamily: "var(--font-fredoka)" }}
           >
             Every Genre,
-            <span className="block mt-1 bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] bg-clip-text text-transparent text-5xl md:text-6xl">
+            {/* CHANGE: Added responsive font sizes for small screens */}
+            <span className="block mt-1 bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] bg-clip-text text-transparent text-4xl sm:text-5xl md:text-6xl">
               Every Mood
             </span>
           </h2>
@@ -184,13 +195,20 @@ export default function GenreShowcase() {
           </p>
         </motion.div>
 
-        {/* ---------- GENRE BUTTONS – COLORED + OVERFLOW GLOW ---------- */}
-        <div className="!overflow-visible w-full pb-3 mb-6 scrollbar-hide">
-          <div className="flex gap-3 min-w-max justify-center items-center px-4 !overflow-visible">
+        {/* ---------- GENRE BUTTONS – COLORED + OVERFLOW GLOW ----------
+          CHANGE: Made the outer div scrollable on the x-axis for mobile.
+        */}
+        <div className="w-full overflow-x-auto pb-3 mb-6 scrollbar-hide">
+          {/* CHANGE 1: Increased `gap-4` (was `gap-3`).
+            CHANGE 2: Changed `justify-center` to `justify-start md:justify-center`.
+                      This aligns buttons to the left on mobile (good for scrolling)
+                      and centers them on medium screens and up.
+            CHANGE 3: Removed `!overflow-visible` as it's not needed here.
+          */}
+          <div className="flex gap-4 min-w-max justify-start md:justify-center items-center px-4">
             {genres.map((genre, i) => {
               const Icon = genre.Icon;
               const isActive = activeGenre === i;
-
               return (
                 <motion.button
                   key={i}
@@ -198,35 +216,35 @@ export default function GenreShowcase() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={isLoaded ? { opacity: 1, scale: 1 } : {}}
                   transition={{ duration: 0.4, delay: i * 0.05 }}
-                  whileHover={{ 
-                    scale: 1.1, 
+                  whileHover={{
+                    scale: 1.1,
                     rotate: 1,
-                    y: -4 
+                    y: -4
                   }}
                   whileTap={{ scale: 0.95 }}
                   className={`
-  relative z-20 flex flex-col items-center gap-2 px-5 py-4 
-  rounded-2xl transition-all duration-500 whitespace-nowrap 
-  text-xs font-bold min-w-[110px] shadow-xl 
-  focus:outline-none focus:ring-2 focus:ring-offset-2
-  ${isActive ? `ring-2 ring-white/50 scale-110` : `hover:scale-105`}
-  ${isActive ? `ring-[${genre.color}]` : ''}   // Tailwind arbitrary value
-`}
-style={{
-  background: isActive 
-    ? `linear-gradient(135deg, ${genre.color}, ${genre.color}cc)` 
-    : `linear-gradient(135deg, ${genre.color}dd, ${genre.color}88)`,
-  border: isActive 
-    ? `2px solid #FFF8F1` 
-    : `1px solid ${genre.color}80`,
-  color: isActive ? '#2D3436' : '#FFF8F1',
-}}
+                    relative z-20 flex flex-col items-center gap-2 px-5 py-4
+                    rounded-2xl transition-all duration-500 whitespace-nowrap
+                    text-xs font-bold min-w-[110px] shadow-xl
+                    focus:outline-none focus:ring-2 focus:ring-offset-2
+                    ${isActive ? `ring-2 ring-white/50 scale-110` : `hover:scale-105`}
+                    ${isActive ? `ring-[${genre.color}]` : ''}
+                  `}
+                  style={{
+                    background: isActive
+                      ? `linear-gradient(135deg, ${genre.color}, ${genre.color}cc)`
+                      : `linear-gradient(135deg, ${genre.color}dd, ${genre.color}88)`,
+                    border: isActive
+                      ? `2px solid #FFF8F1`
+                      : `1px solid ${genre.color}80`,
+                    color: isActive ? '#2D3436' : '#FFF8F1',
+                  }}
                 >
-                  {/* ========== OVERFLOW GLOW (SPILLS OUT) ========== */}
+                  {/* ========== OVERFLOW GLOW (No changes) ========== */}
                   <motion.div
                     layoutId="activeGlow"
                     className={`
-                      absolute inset-0 -z-10 rounded-2xl blur-2xl 
+                      absolute inset-0 -z-10 rounded-2xl blur-2xl
                       pointer-events-none !overflow-visible
                       ${isActive ? 'opacity-100' : 'opacity-0'}
                     `}
@@ -236,39 +254,37 @@ style={{
                       scale: 1.3,
                       transformOrigin: 'center',
                     }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 400, 
-                      damping: 25 
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 25
                     }}
                   />
-
-                  {/* ========== ICON ========== */}
+                  {/* ========== ICON (No changes) ========== */}
                   <motion.div
                     className="relative z-30 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
                     style={{
-                      background: isActive 
-                        ? '#FFF8F1' 
+                      background: isActive
+                        ? '#FFF8F1'
                         : `rgba(255, 248, 241, 0.2)`,
-                      boxShadow: isActive 
-                        ? `0 0 25px ${genre.color}80` 
+                      boxShadow: isActive
+                        ? `0 0 25px ${genre.color}80`
                         : `0 4px 12px rgba(0,0,0,0.15)`,
                     }}
                     whileHover={{ scale: 1.15 }}
                   >
-                    <Icon 
-                      className="w-5 h-5" 
-                      style={{ 
-                        color: isActive ? genre.color : '#FFF8F1' 
-                      }} 
+                    <Icon
+                      className="w-5 h-5"
+                      style={{
+                        color: isActive ? genre.color : '#FFF8F1'
+                      }}
                     />
                   </motion.div>
-
-                  {/* ========== TITLE ========== */}
+                  {/* ========== TITLE (No changes) ========== */}
                   <span
                     className="relative z-30 text-xs font-bold uppercase tracking-wide"
-                    style={{ 
-                      textShadow: isActive ? '0 1px 2px rgba(255, 255, 255, 0.43)' : 'none' 
+                    style={{
+                      textShadow: isActive ? '0 1px 2px rgba(255, 255, 255, 0.43)' : 'none'
                     }}
                   >
                     {genre.title}
@@ -290,7 +306,8 @@ style={{
             className="w-full max-w-2xl mx-auto"
           >
             <div
-              className="relative bg-gradient-to-br from-[#E5E5E5] to-white rounded-2xl p-7 shadow-2xl border-2 overflow-hidden"
+              // CHANGE: Reduced padding on small screens (p-5)
+              className="relative bg-gradient-to-br from-[#E5E5E5] to-white rounded-2xl p-5 md:p-7 shadow-2xl border-2 overflow-hidden"
               style={{ borderColor: genres[activeGenre].color + "60" }}
             >
               <div
@@ -306,7 +323,6 @@ style={{
                 >
                   {genres[activeGenre].description}
                 </p>
-
                 <div
                   className="p-5 rounded-2xl border-2 bg-gradient-to-br from-white via-[#FFF8F1] to-white shadow-inner"
                   style={{
@@ -345,7 +361,6 @@ style={{
                     &quot;{genres[activeGenre].example}&quot;
                   </p>
                 </div>
-
                 <motion.div
                   className="mt-7 text-center"
                   initial={{ opacity: 0, y: 10 }}
@@ -377,7 +392,7 @@ style={{
         </AnimatePresence>
       </div>
 
-      {/* ---------- SCROLLBAR HIDE ---------- */}
+      {/* ---------- SCROLLBAR HIDE (No changes) ---------- */}
       <style jsx>{`
         .scrollbar-hide {
           -ms-overflow-style: none;

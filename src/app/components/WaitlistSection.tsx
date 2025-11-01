@@ -9,14 +9,30 @@ export default function WaitlistSection() {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!email || isLoading) return;
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+const handleSubmit = async () => {
+  if (!email || isLoading) return;
+  setIsLoading(true);
+
+  try {
+    const response = await fetch("/api/submit-email", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email }),
+});
+
+
+    const result = await response.json();
+    console.log(result); // should log { status: "success" }
+
     setSubmitted(true);
-    setIsLoading(false);
     setEmail("");
-  };
+  } catch (error) {
+    console.error("Error submitting to Google Sheets:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const benefits = [
     {
@@ -259,9 +275,9 @@ export default function WaitlistSection() {
                   You&apos;re In! 
                 </h3>
 
-                <p className="text-lg mb-6 opacity-90" style={{ fontFamily: "var(--font-nunito)" }}>
+                {/* <p className="text-lg mb-6 opacity-90" style={{ fontFamily: "var(--font-nunito)" }}>
                   Check your inbox for confirmation. The magic begins soon.
-                </p>
+                </p> */}
 
                 <p className="text-sm opacity-80" style={{ fontFamily: "var(--font-poppins)" }}>
                   Follow us for updates & sneak peeks!

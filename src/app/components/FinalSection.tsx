@@ -24,33 +24,66 @@ export default function FinalSection() {
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const isAutoCompletingRef = useRef(false);
 
-  // Load images
+  // Load images (no change)
   useEffect(() => {
-    const loadPromises = IMAGES.map((src) =>
-      new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error(`Failed to load: ${src}`));
-        img.src = src;
-      })
+    const loadPromises = IMAGES.map(
+      (src) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to load: ${src}`));
+          img.src = src;
+        })
     );
 
     Promise.all(loadPromises)
       .then(setImages)
       .catch((err) => {
         console.error(err);
-        // Optional: fallback images
       });
   }, []);
 
-  // Initialize canvasRefs array
+  // Initialize canvasRefs array (no change)
   useEffect(() => {
     canvasRefs.current = Array(IMAGES.length).fill(null);
   }, []);
 
-  // Draw base + scratch layers
+  // ---------- [CHANGED] Draw base + scratch layers ----------
   useEffect(() => {
     if (images.length === 0) return;
+
+    /**
+     * NEW HELPER FUNCTION
+     * Calculates the correct dimensions to draw an image on a canvas
+     * with 'background-size: cover' behavior.
+     */
+    const drawCover = (ctx: CanvasRenderingContext2D, img: HTMLImageElement) => {
+      const canvasWidth = ctx.canvas.width;
+      const canvasHeight = ctx.canvas.height;
+      const imgWidth = img.width;
+      const imgHeight = img.height;
+
+      const canvasRatio = canvasWidth / canvasHeight;
+      const imgRatio = imgWidth / imgHeight;
+
+      let drawWidth, drawHeight, drawX, drawY;
+
+      if (imgRatio > canvasRatio) {
+        // Image is wider than canvas
+        drawHeight = canvasHeight;
+        drawWidth = canvasHeight * imgRatio;
+        drawX = (canvasWidth - drawWidth) / 2; // Center horizontally
+        drawY = 0;
+      } else {
+        // Image is taller than or equal in ratio to canvas
+        drawWidth = canvasWidth;
+        drawHeight = canvasWidth / imgRatio;
+        drawX = 0;
+        drawY = (canvasHeight - drawHeight) / 2; // Center vertically
+      }
+
+      ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+    };
 
     const drawAll = () => {
       const w = window.innerWidth;
@@ -66,12 +99,14 @@ export default function FinalSection() {
         ctx.clearRect(0, 0, w, h);
 
         // Draw base image (this is revealed)
-        ctx.drawImage(images[index], 0, 0, w, h);
+        // OLD: ctx.drawImage(images[index], 0, 0, w, h);
+        drawCover(ctx, images[index]); // NEW
 
         // Draw scratchable top layer (only if not last)
         if (index < IMAGES.length - 1) {
           ctx.globalCompositeOperation = "source-over";
-          ctx.drawImage(images[index + 1], 0, 0, w, h);
+          // OLD: ctx.drawImage(images[index + 1], 0, 0, w, h);
+          drawCover(ctx, images[index + 1]); // NEW
         }
       });
     };
@@ -79,8 +114,9 @@ export default function FinalSection() {
     drawAll();
     window.addEventListener("resize", drawAll);
     return () => window.removeEventListener("resize", drawAll);
-  }, [images]);
+  }, [images]); // Dependency array is correct
 
+  // autoCompleteErase (no change)
   const autoCompleteErase = (canvas: HTMLCanvasElement, layerIndex: number) => {
     if (isAutoCompletingRef.current) return;
     isAutoCompletingRef.current = true;
@@ -104,53 +140,53 @@ export default function FinalSection() {
     }, 16);
   };
 
-  const BRUSH_RADIUS = 250;   // ← tweak this
+  const BRUSH_RADIUS = 250; // ← tweak this
 
-const handleMouseMove = (e: React.MouseEvent, layerIndex: number) => {
-  if (completedLayers.includes(layerIndex) || isAutoCompletingRef.current) return;
-  if (layerIndex === IMAGES.length - 1) return;
+  // handleMouseMove (no change)
+  const handleMouseMove = (e: React.MouseEvent, layerIndex: number) => {
+    if (completedLayers.includes(layerIndex) || isAutoCompletingRef.current) return;
+    if (layerIndex === IMAGES.length - 1) return;
 
-  const canvas = canvasRefs.current[layerIndex];
-  if (!canvas) return;
+    const canvas = canvasRefs.current[layerIndex];
+    if (!canvas) return;
 
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return;
 
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-  ctx.globalCompositeOperation = "destination-out";
+    ctx.globalCompositeOperation = "destination-out";
 
-  const drawCircle = (offsetX: number, offsetY: number) => {
-    const grad = ctx.createRadialGradient(
-      x + offsetX, y + offsetY, 0,
-      x + offsetX, y + offsetY, BRUSH_RADIUS
-    );
-    grad.addColorStop(0, "rgba(0,0,0,1)");
-    grad.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(x + offsetX, y + offsetY, BRUSH_RADIUS, 0, Math.PI * 2);
-    ctx.fill();
+    const drawCircle = (offsetX: number, offsetY: number) => {
+      const grad = ctx.createRadialGradient(
+        x + offsetX, y + offsetY, 0,
+        x + offsetX, y + offsetY, BRUSH_RADIUS
+      );
+      grad.addColorStop(0, "rgba(0,0,0,1)");
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x + offsetX, y + offsetY, BRUSH_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    drawCircle(-BRUSH_RADIUS * 0.3, -BRUSH_RADIUS * 0.3);
+    drawCircle(0, 0);
+    drawCircle(BRUSH_RADIUS * 0.3, BRUSH_RADIUS * 0.3);
+
+    if (Math.random() > 0.9) {
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let transparent = 0;
+      for (let i = 3; i < data.length; i += 4) if (data[i] < 50) transparent++;
+      if (transparent / (canvas.width * canvas.height) > 0.75) {
+        autoCompleteErase(canvas, layerIndex);
+      }
+    }
   };
 
-  // 3 overlapping circles → feels massive
-  drawCircle(-BRUSH_RADIUS * 0.3, -BRUSH_RADIUS * 0.3);
-  drawCircle(0, 0);
-  drawCircle(BRUSH_RADIUS * 0.3, BRUSH_RADIUS * 0.3);
-
-  // ----- progress check (unchanged) -----
-  if (Math.random() > 0.9) {
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    let transparent = 0;
-    for (let i = 3; i < data.length; i += 4) if (data[i] < 50) transparent++;
-    if (transparent / (canvas.width * canvas.height) > 0.75) {
-      autoCompleteErase(canvas, layerIndex);
-    }
-  }
-};
-
+  // JSX (no change)
   return (
     <section className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
       {/* Loading state */}
