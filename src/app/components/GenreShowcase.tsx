@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LucideIcon } from "lucide-react";
 import {
   Sword,
   Heart,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 
 type Genre = {
-  Icon: any;
+  Icon: LucideIcon;
   title: string;
   description: string;
   color: string;
@@ -276,7 +277,7 @@ export default function GenreShowcase(): React.JSX.Element {
                   </div>
 
                   <p className="text-[#2D3436] italic leading-relaxed text-base sm:text-lg font-medium">
-                    "{active.example}"
+                    &quot;{active.example}&quot;
                   </p>
                 </div>
 
