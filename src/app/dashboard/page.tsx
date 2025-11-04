@@ -217,6 +217,50 @@ export default function Dashboard() {
     }
   };
 
+  const handleGenerateImage = async (storyId: string, storyType: string) => {
+    setIsProcessing(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const response = await fetch(
+        `${backendUrl}/stories/image-gen/${userId}/${storyId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            story_type: storyType,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok && data.status === "success") {
+        if (data.data) {
+          // Update the specific story's image_data
+          setUserProfile((prev) => {
+            if (!prev) return null;
+            const updatedStories = prev.stories.map((s) =>
+              s.story_id === storyId ? { ...s, image_data: data.data } : s
+            );
+            return { ...prev, stories: updatedStories };
+          });
+        } else if (data.message === "image already generated") {
+          // Refresh profile to get the latest data
+          await fetchProfile();
+        }
+      } else {
+        setError(data.message || "Failed to generate image");
+      }
+    } catch (err) {
+      setError("Error generating image");
+      console.error(err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleMakePublic = async () => {
     if (!showPublicConfirm?.story || !userId || !accessToken) return;
 
@@ -355,7 +399,7 @@ export default function Dashboard() {
 
           {/* Upgrade Prompt - Only show if not tier 4 and limit reached */}
           {userProfile &&
-            userProfile.tier < 4 &&
+            userProfile.tier < 2 &&
             hasReachedWordLimit(userProfile.tier, userProfile.monthly_word_count) && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -411,16 +455,26 @@ export default function Dashboard() {
                     transition={{ duration: 0.3 }}
                     className="bg-gradient-to-br from-[#FFF8F1] to-[#E5E5E5] rounded-xl shadow-lg p-5 flex flex-col min-w-[320px] max-w-[320px] h-[560px] border border-[#E5E5E5] overflow-hidden"
                   >
-                    {/* Image */}
-                    {story.image_data && (
-                      <div className="w-full aspect-square mb-3 rounded-lg overflow-hidden shadow-md">
+                    {/* Image or Generate Button */}
+                    <div className="w-full aspect-square mb-3 rounded-lg overflow-hidden shadow-md">
+                      {story.image_data ? (
                         <img
                           src={`data:image/png;base64,${story.image_data}`}
                           alt={story.title}
                           className="w-full h-full object-cover"
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-[#E5E5E5]">
+                          <button
+                            onClick={() => handleGenerateImage(story.story_id, story.story_type)}
+                            disabled={isProcessing}
+                            className="px-4 py-2 bg-gradient-to-r from-[#00BFA6] to-[#6C5CE7] text-[#FFF8F1] rounded-lg font-medium text-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isProcessing ? "Generating..." : "Generate Cover Image"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Title & Delete */}
                     <div className="flex justify-between items-start mb-3">

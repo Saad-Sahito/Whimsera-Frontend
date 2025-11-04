@@ -205,7 +205,7 @@ export default function FeedbackPage() {
             {/* INTERACTIVITY */}
             <div>
               <label className="font-semibold">
-                5. If you tried interactive mode, how natural did the choices feel? (1–5)
+                5. If you tried interactive mode, how meaningful did the choices feel? (1–5)
               </label>
               <div className="flex space-x-2 mt-2">
                 {[1, 2, 3, 4, 5].map((value) => (
@@ -286,10 +286,10 @@ export default function FeedbackPage() {
             {/* OPTIONAL METRICS */}
             <div>
               <label className="font-semibold">
-                10. Would you recommend the app to a friend? (0-5)
+                10. Would you recommend the app to a friend? (1-5)
               </label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {[0, 1, 2, 3, 4, 5].map((value) => (
+                {[1, 2, 3, 4, 5].map((value) => (
                   <button
                     key={value}
                     type="button"

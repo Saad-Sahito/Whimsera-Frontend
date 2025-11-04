@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 
 const tiers = [
-  { value: 1, name: "Free", description: "Begin your journey", icon: "Seedling" },
-  { value: 2, name: "Scribe", description: "Seek new horizons", icon: "Sword" },
+  { value: 1, name: "Free", description: "Begin your journey"},
+  { value: 2, name: "Scribe", description: "Seek new horizons" },
 ];
 
 export default function ProfileSetup() {
@@ -258,7 +258,7 @@ export default function ProfileSetup() {
                         : "bg-white/20 text-white hover:bg-white/30"
                     }`}
                   >
-                    <div className="text-4xl mb-2">{tier.icon}</div>
+                    {/* <div className="text-4xl mb-2">{tier.icon}</div> */}
                     <h3 className="text-2xl font-bold mb-1">{tier.name}</h3>
                     <p className={`text-sm ${selectedTier === tier.value ? "text-[#2D3436]/80" : "text-white/80"}`}>
                       {tier.description}
