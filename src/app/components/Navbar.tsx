@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useAuth } from "../context/AuthContext";
-import { FaUserCircle } from "react-icons/fa";
 
 type Ripple = {
   id: number;
@@ -16,7 +14,6 @@ export default function Navbar() {
   const [ripples, setRipples] = useState<Ripple[]>([]);
   let rippleCounter = 0;
 
-  const { isAuthenticated } = useAuth();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();

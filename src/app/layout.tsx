@@ -7,7 +7,7 @@ import {
   Nunito,
 } from "next/font/google";
 import BackgroundWrapper from "./components/background-wrapper";
-import { AuthProvider } from "./context/AuthContext"; // Import the context provider
+
 
 
 const poppins = Poppins({
@@ -62,11 +62,10 @@ export default function RootLayout({
           antialiased text-[#2D3436] min-h-screen relative overflow-x-hidden
         `}
       >
-        {/* Provide AuthContext globally */}
-        <AuthProvider>
+
           {/* Client-side wrapper handles login/signup background logic */}
           <BackgroundWrapper>{children}</BackgroundWrapper>
-        </AuthProvider>
+
       </body>
     </html>
   );
