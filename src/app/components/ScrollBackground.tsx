@@ -24,7 +24,7 @@ export default function ScrollBackground({ children }: ScrollBackgroundProps) {
     // Output colors - matching each section
     [
       "rgba(255, 248, 241, 0.3)",  // Hero - Seashell
-      "rgba(240, 255, 254, 0)",  // Genre Showcase - Mint tint
+      "rgba(0, 0, 0, 1)",  // Genre Showcase - Mint tint
       "rgba(255, 248, 241, 0.5)",  // Interactive Demo - Vanilla 
       "rgba(255, 248, 241, 0.6)",  // How It Works - Seashell (keep it consistent)
       "rgba(255, 248, 241, 0.7)",  // AI Magic - Seashell
