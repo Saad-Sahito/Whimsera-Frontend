@@ -36,7 +36,7 @@ const features = [
 
 export default function AIMagicRedesign() {
   return (
-    <section className="relative py-24 px-8 overflow-hidden">
+    <section className="relative py-24 px-8 overflow-visible ">
       {/* Subtle animated background blobs */}
       <div className="absolute inset-0 opacity-40 pointer-events-none">
         <motion.div

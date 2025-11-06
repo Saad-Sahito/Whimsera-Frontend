@@ -188,7 +188,7 @@ export default function FinalSection() {
 
   // JSX (no change)
   return (
-    <section className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
+    <section className="relative w-full h-screen overflow-visible bg-black flex items-center justify-center">
       {/* Loading state */}
       {images.length === 0 && (
         <div className="text-white text-2xl">Loading adventure...</div>

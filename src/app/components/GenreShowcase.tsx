@@ -30,7 +30,7 @@ const genres: Genre[] = [
     description: "Laugh-out-loud moments and witty adventures",
     color: "#FDCB6E",
     example: "When a clumsy wizard tries to open a bakery, chaos—and laughter—ensues...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Comedy1.png",
+    bgImage: "/Genre_bg/Comedy1.png",
   },
   {
     Icon: Sword,
@@ -38,7 +38,7 @@ const genres: Genre[] = [
     description: "Dragons, magic, and quests await in mystical realms",
     color: "#6C5CE7",
     example: "Forge alliances with elven kingdoms and battle ancient evils...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Fantasy1.png",
+    bgImage: "/Genre_bg/Fantasy1.png",
   },
   {
     Icon: Heart,
@@ -46,7 +46,7 @@ const genres: Genre[] = [
     description: "Love stories that tug at your heartstrings",
     color: "#FF7675",
     example: "Two strangers meet on a rainy night, their destinies intertwined...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Romance3.png",
+    bgImage: "/Genre_bg/Romance3.png",
   },
   {
     Icon: Skull,
@@ -54,7 +54,7 @@ const genres: Genre[] = [
     description: "Chilling tales that keep you on edge",
     color: "#2D3436",
     example: "The old house whispers secrets no one should ever hear...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Horror1.png",
+    bgImage: "/Genre_bg/Horror1.png",
   },
   {
     Icon: Rocket,
@@ -62,7 +62,7 @@ const genres: Genre[] = [
     description: "Explore distant galaxies and futuristic worlds",
     color: "#74C0FC",
     example: "Your ship's AI has detected an anomaly in the space-time fabric...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Sci-fi1.png",
+    bgImage: "/Genre_bg/Sci-fi1.png",
   },
   {
     Icon: Eye,
@@ -70,7 +70,7 @@ const genres: Genre[] = [
     description: "Unravel secrets and solve enigmatic puzzles",
     color: "#00BFA6",
     example: "The detective found a clue that changed everything...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Mystery1.png",
+    bgImage: "/Genre_bg/Mystery1.png",
   },
   {
     Icon: Crown,
@@ -78,15 +78,15 @@ const genres: Genre[] = [
     description: "Edge-of-your-seat twists and psychological tension",
     color: "#FFD166",
     example: "Every phone call could reveal the truth—or destroy everything...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Suspense_1.png",
+    bgImage: "/Genre_bg/Suspense_1.png",
   },
   {
     Icon: Drama,
     title: "Slice of Life",
     description: "Real-life conflicts and emotional journeys",
     color: "#E17055",
-    example: "A typical morning, until I realized...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Slice_of_life2.png",
+    example: "I woke to sunlight streaming through the window, another ordinary morning—or so I thought...",
+    bgImage: "/Genre_bg/Slice_of_life2.png",
   },
   {
     Icon: Sparkles,
@@ -94,7 +94,7 @@ const genres: Genre[] = [
     description: "Where the ordinary meets the extraordinary",
     color: "#A29BFE",
     example: "Ever since the flowers started singing, nothing was the same...",
-    bgImage: "/Genre_bg/upscayl_png_realesrgan-x4plus-anime_4x/Adventure1.png",
+    bgImage: "/Genre_bg/Adventure1.png",
   },
 ];
 
@@ -110,7 +110,7 @@ export default function GenreShowcase(): React.JSX.Element {
   const active = genres[activeGenre];
 
   return (
-    <section className="relative min-h-screen py-10 px-4 sm:px-6 flex flex-col justify-center overflow-hidden">
+    <section className="relative min-h-screen py-10 px-4 sm:px-6 flex flex-col justify-center overflow-visible ">
       {/* ---------- BACKGROUND (image element baked for reliable object-cover cropping) ---------- */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -183,8 +183,8 @@ export default function GenreShowcase(): React.JSX.Element {
         </motion.div>
 
         {/* ---------- Genre buttons (scrollable on mobile) ---------- */}
-        <div className="w-full overflow-x-auto pb-3 mb-6 scrollbar-hide">
-          <div className="flex gap-3 sm:gap-4 min-w-max items-center px-2 sm:px-4">
+<div className="w-full overflow-x-auto overflow-y-visible pb-3 mb-6 scrollbar-hide">
+  <div className="flex gap-3 sm:gap-4 min-w-max items-center px-2 sm:px-4 py-6">
             {genres.map((g, i) => {
               const isActive = i === activeGenre;
               const Icon = g.Icon;
@@ -197,7 +197,7 @@ export default function GenreShowcase(): React.JSX.Element {
                   transition={{ duration: 0.36, delay: i * 0.03 }}
                   whileHover={{ scale: 1.06, y: -3 }}
                   whileTap={{ scale: 0.96 }}
-                  className={`relative z-20 flex flex-col items-center gap-2 px-4 py-3 rounded-2xl transition-all duration-300 whitespace-nowrap text-xs font-bold min-w-[92px] sm:min-w-[110px]`}
+                  className={`relative z-20 flex flex-col items-center gap-2 px-4 py-3 rounded-2xl transition-all duration-300 whitespace-nowrap text-xs font-bold min-w-[92px] sm:min-w-[110px] overflow-visible`}
                   style={{
                     background: isActive
                       ? `linear-gradient(135deg, ${g.color}, ${g.color}cc)`

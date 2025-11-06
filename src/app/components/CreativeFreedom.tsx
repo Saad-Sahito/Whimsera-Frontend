@@ -44,9 +44,9 @@ const features = [
 
 export default function CreativeFreedom() {
   return (
-    <section className="relative py-20 px-6 overflow-hidden bg-gradient-to-b from-[#FAF9F6] to-[#F5F9FF]">
+    <section className="relative py-20 px-6 overflow-visible ">
       {/* Animated Background Blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-visible pointer-events-none">
         <motion.div
           className="absolute top-10 left-1/4 w-96 h-96 bg-[#FF7675]/15 rounded-full blur-3xl"
           animate={{ scale: [1, 1.4, 1], rotate: [0, 120, 0], x: [0, 50, 0] }}
@@ -124,7 +124,7 @@ export default function CreativeFreedom() {
 
                 {/* Card */}
                 <div
-                  className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 border-2 border-white/50 shadow-xl overflow-hidden"
+                  className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 border-2 border-white/50 shadow-xl overflow-visible"
                   style={{
                     background: `linear-gradient(to bottom right, ${feature.bgGradient}, white)`,
                   }}
@@ -209,7 +209,7 @@ export default function CreativeFreedom() {
           transition={{ duration: 0.8 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="relative bg-white/95 backdrop-blur-2xl rounded-3xl p-10 shadow-2xl border-2 border-white/60 overflow-hidden">
+          <div className="relative bg-white/95 backdrop-blur-2xl rounded-3xl p-10 shadow-2xl border-2 border-white/60 overflow-visible">
             {/* Rainbow Top Bar */}
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#FF7675] via-[#FFD166] via-[#6C5CE7] to-[#00BFA6] rounded-t-3xl" />
 

@@ -31,7 +31,7 @@ export default function Home() {
   }, []);
   return (
     <ScrollBackground>
-      <main className="pt-21 min-h-screen text-[#2D3436] overflow-x-hidden">
+      <main className="pt-21 min-h-screen text-[#2D3436] overflow-visible -my-20">
         <Navbar />
         
         {/* Hero Section */}

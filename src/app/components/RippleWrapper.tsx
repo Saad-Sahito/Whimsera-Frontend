@@ -36,7 +36,7 @@ export default function RippleWrapper({
   return (
     <div
       onMouseMove={handleMouseMove}
-      className={`relative overflow-hidden ${className}`}
+      className={`relative overflow-visible ${className}`}
     >
       {/* Ripple layer */}
       <div className="absolute inset-0 pointer-events-none">

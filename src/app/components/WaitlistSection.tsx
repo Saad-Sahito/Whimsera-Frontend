@@ -62,9 +62,9 @@ const handleSubmit = async () => {
   ];
 
   return (
-    <section className="relative py-20 px-6 overflow-hidden">
+    <section className="relative py-20 px-6 overflow-visible ">
       {/* Animated Background Blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-visible pointer-events-none">
         <motion.div
           className="absolute top-10 left-10 w-80 h-80 bg-[#FFD166]/25 rounded-full blur-3xl"
           animate={{ scale: [1, 1.3, 1], x: [0, 40, 0], y: [0, -30, 0] }}
@@ -134,7 +134,7 @@ const handleSubmit = async () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
                 whileHover={{ y: -6, scale: 1.03 }}
-                className="group relative p-5 bg-white rounded-2xl shadow-lg border-2 border-white/50 overflow-hidden"
+                className="group relative p-5 bg-white rounded-2xl shadow-lg border-2 border-white/50 overflow-visible"
               >
                 {/* Gradient Background */}
                 <div
@@ -226,7 +226,7 @@ const handleSubmit = async () => {
                       disabled={isLoading || !email}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="relative px-10 py-5 bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] text-white font-bold rounded-2xl shadow-xl overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative px-10 py-5 bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#FFD166] text-white font-bold rounded-2xl shadow-xl overflow-visible group disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ fontFamily: "var(--font-poppins)" }}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-3">
@@ -321,9 +321,9 @@ const handleSubmit = async () => {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="mt-16 text-center"
         >
-          <p className="text-sm text-[#2D3436]/60 mb-5" style={{ fontFamily: "var(--font-poppins)" }}>
+          {/* <p className="text-sm text-[#2D3436]/60 mb-5" style={{ fontFamily: "var(--font-poppins)" }}>
             Trusted by dreamers worldwide
-          </p>
+          </p> */}
           <div className="flex justify-center items-center gap-8 flex-wrap">
             {[
               { Icon: Sparkles, label: "AI-Powered", color: "#6C5CE7" },

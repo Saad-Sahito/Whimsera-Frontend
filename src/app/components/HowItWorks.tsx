@@ -29,7 +29,7 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="relative pt-24 pb-32 overflow-hidden">
+    <section className="relative pt-24 pb-32 overflow-visible -my-20">
       {/* Subtle animated accent orb (kept for depth, but optional) */}
       <motion.div
         className="absolute inset-0 opacity-20 pointer-events-none"
