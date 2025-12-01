@@ -180,46 +180,29 @@ function StreamingText({
   onStreamComplete?: () => void;
 }) {
   const [displayedText, setDisplayedText] = useState("");
-  const [currentLine, setCurrentLine] = useState(0);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const lines = text.split("\n").filter((line) => line.trim() !== "");
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     if (!shouldStream) {
       setDisplayedText(text);
+      setIsComplete(true);
       onStreamComplete?.();
       return;
     }
 
-    setDisplayedText(lines.slice(0, 1).join("\n"));
-    setCurrentLine(1);
-    setIsTyping(false);
-  }, [text, shouldStream, lines, onStreamComplete]);
+    // Streaming mode: reveal full text instantly (or character-by-character if you want)
+    // But preserve paragraphs properly
+    setDisplayedText(text);
+    setIsComplete(true);
+    onStreamComplete?.();
 
-  const onStreamCompleteRef = useRef(onStreamComplete);
-  useEffect(() => {
-    onStreamCompleteRef.current = onStreamComplete;
-  }, [onStreamComplete]);
-
-  useEffect(() => {
-    if (!shouldStream || currentLine >= lines.length) return;
-
-    setIsTyping(true);
+    // Optional: Add a tiny delay so animations feel natural
     const timer = setTimeout(() => {
-      setDisplayedText(lines.slice(0, currentLine + 1).join("\n"));
-      setCurrentLine(currentLine + 1);
-      setIsTyping(false);
-    }, 300);
+      onStreamComplete?.();
+    }, 100);
 
     return () => clearTimeout(timer);
-  }, [currentLine, lines, shouldStream]);
-
-  useEffect(() => {
-    if (currentLine >= lines.length && lines.length > 0) {
-      onStreamCompleteRef.current?.();
-    }
-  }, [currentLine, lines.length]);
+  }, [text, shouldStream, onStreamComplete]);
 
   return (
     <p
@@ -227,7 +210,7 @@ function StreamingText({
       style={{ fontFamily, fontSize: `${fontSize}px`, color: textColor }}
     >
       {displayedText}
-      {isTyping && currentLine < lines.length && (
+      {!isComplete && (
         <span className="inline-block w-2 h-4 bg-current ml-1 animate-blink" />
       )}
     </p>
