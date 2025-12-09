@@ -1,8 +1,8 @@
 "use client";
 
+import { CheckCircle2, Zap, Globe, Users, Network, Layers, Shield, FileText, Sparkles, Wand2, User, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Sparkles, User, BookOpen, Wand2 } from "lucide-react";
 import NavbarRightDashboard from "../components/NavbarRightDashboard";
 import Footer from "../components/Footer";
 import { useAuth } from "@/app/context/AuthContext";
@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import ProtagonistSection from "./ProtagonistSection";
 import FoundationSection from "./FoundationSection";
 import MagicSection from "./MagicSection";
+import StoryCreationPhases from "./StoryCreationPhases"; 
 
 const GRADIENT_COLORS = [
   "rgba(108, 92, 231, 0.3)",
@@ -32,7 +33,12 @@ export default function StartStory() {
   const [mounted, setMounted] = useState(false);
   const [showQuickNav, setShowQuickNav] = useState(false);
   const [showCharacterPreview, setShowCharacterPreview] = useState(false);
-  const [ripples, setRipples] = useState<
+
+  // ---------- Phase Modal ----------
+  const [showPhases, setShowPhases] = useState(false);
+
+  // ---------- Ripple effect ----------
+  const ripples = useRef<
     { id: number; x: number; y: number; colorPair: [string, string] }[]
   >([]);
   const rippleCounter = useRef(0);
@@ -72,16 +78,9 @@ export default function StartStory() {
   const [protagonistPhysicalDescription, setProtagonistPhysicalDescription] = useState("");
 
   const filledProtagonistFields = [
-    protagonistName,
-    protagonistAge,
-    protagonistGender,
-    protagonistArchetype,
-    protagonistTrait,
-    protagonistBackground,
-    protagonistDesire,
-    protagonistFear,
-    protagonistRelationships,
-    protagonistPhysicalDescription,
+    protagonistName, protagonistAge, protagonistGender, protagonistArchetype,
+    protagonistTrait, protagonistBackground, protagonistDesire, protagonistFear,
+    protagonistRelationships, protagonistPhysicalDescription,
   ].filter(Boolean).length;
   const totalProtagonistFields = 10;
 
@@ -130,29 +129,22 @@ export default function StartStory() {
     const onMove = (e: MouseEvent) => {
       lastMoveTime.current = Date.now();
       const now = Date.now();
-      let pair: [string, string];
       if (now - lastColorChangeTime.current > 500) {
         colorIndex.current = (colorIndex.current + 1) % GRADIENT_COLORS.length;
         lastColorChangeTime.current = now;
       }
-      pair = [
+      const pair: [string, string] = [
         GRADIENT_COLORS[colorIndex.current],
         GRADIENT_COLORS[(colorIndex.current + 1) % GRADIENT_COLORS.length],
       ];
       const id = Date.now() + rippleCounter.current++;
-      setRipples((p) => [...p, { id, x: e.clientX, y: e.clientY, colorPair: pair }]);
-      setTimeout(() => setRipples((p) => p.filter((r) => r.id !== id)), 1000);
+      ripples.current = [...ripples.current, { id, x: e.clientX, y: e.clientY, colorPair: pair }];
+      setTimeout(() => {
+        ripples.current = ripples.current.filter((r) => r.id !== id);
+      }, 1000);
     };
-    const idle = setInterval(() => {
-      if (Date.now() - lastMoveTime.current > 100) {
-        // no movement
-      }
-    }, 100);
     window.addEventListener("mousemove", onMove);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      clearInterval(idle);
-    };
+    return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
   // ---------- Quick nav on scroll ----------
@@ -238,9 +230,13 @@ export default function StartStory() {
   const handleBeginAdventure = async () => {
     if (!userId) return setError("Please log in to start your adventure.");
     setIsLoading(true);
+    setShowPhases(true);
     setError(null);
+
     try {
       const backend = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      // 1. Initialize story
       const initRes = await fetch(
         `${backend}/stories/initialize_story?user_id=${userId}&story_type=${storyType}`,
         {
@@ -252,6 +248,7 @@ export default function StartStory() {
       if (!initRes.ok) throw new Error(`Init failed: ${await initRes.text()}`);
       const { story_id } = await initRes.json();
 
+      // 2. Generate premise
       const payload = { ...getInitialStoryData(), story_id };
       console.log(payload)
       const premiseRes = await fetch(`${backend}/premise`, {
@@ -259,16 +256,31 @@ export default function StartStory() {
         headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({ initial_story_data: payload, model: "None" }),
       });
-      if (!premiseRes.ok) throw new Error(`Premise failed: ${await premiseRes.text()}`);
+
+      if (!premiseRes.ok) {
+        const errorText = await premiseRes.text();
+        let errorData;
+        try { errorData = JSON.parse(errorText); } catch {}
+        if (premiseRes.status === 390) {
+          throw new Error(errorData?.detail || "Inappropriate words found in user context");
+        } else if (premiseRes.status === 380) {
+          throw new Error(errorData?.detail || "User monthly word count limit reached");
+        } else {
+          throw new Error("Failed to create story");
+        }
+      }
+
+      // Success → redirect
       router.push(`/generation-app?story_id=${story_id}&story_type=${storyType}`);
     } catch (e: any) {
-      setError(e.message ?? "Something went wrong");
+      setError(e.message ?? "Failed to create story");
+      setShowPhases(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ---------- Loader ----------
+  // ---------- Top Loader ----------
   const TopLoader = ({ loading }: { loading: boolean }) => (
     <AnimatePresence>
       {loading && (
@@ -279,8 +291,7 @@ export default function StartStory() {
           exit={{ scaleX: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          <div
-            className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
+          <div className="h-full bg-gradient-to-r from-[#6C5CE7] via-[#00BFA6] to-[#6C5CE7] animate-pulse"
             style={{ backgroundSize: "200% 100%", animation: "gradient-shift 1.5s ease infinite" }}
           />
         </motion.div>
@@ -288,13 +299,14 @@ export default function StartStory() {
     </AnimatePresence>
   );
 
-  if (authLoading)
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
         <TopLoader loading />
         Checking authentication...
       </div>
     );
+  }
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -304,9 +316,9 @@ export default function StartStory() {
       <div className="min-h-screen text-[#2D3436] pb-20 py-18 relative px-4 sm:px-6 lg:px-8">
         {/* Ripple background */}
         {mounted && (
-          <div className="fixed inset-0 pointer-events-none z-20 overflow-visible">
+          <div className="fixed inset-0 pointer-events-none z-20">
             <AnimatePresence>
-              {ripples.map((r) => (
+              {ripples.current.map((r) => (
                 <motion.div
                   key={r.id}
                   initial={{ opacity: 0.5, scale: 0.6 }}
@@ -330,12 +342,8 @@ export default function StartStory() {
         {/* Quick nav (mobile) */}
         <AnimatePresence>
           {showQuickNav && (
-            <motion.div
-              initial={{ y: -100 }}
-              animate={{ y: 0 }}
-              exit={{ y: -100 }}
-              className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm shadow-lg px-4 py-3 md:hidden"
-            >
+            <motion.div initial={{ y: -100 }} animate={{ y: 0 }} exit={{ y: -100 }}
+              className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm shadow-lg px-4 py-3 md:hidden">
               <div className="flex justify-around items-center max-w-md mx-auto">
                 <button onClick={() => scrollToSection("protagonist")} className="flex flex-col items-center text-xs">
                   <User className="w-5 h-5 text-[#6C5CE7] mb-1" />
@@ -392,21 +400,8 @@ export default function StartStory() {
           )}
         </AnimatePresence>
 
-        {/* Loading overlay */}
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
-              <motion.div
-                className="w-24 h-24 rounded-full bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] shadow-2xl"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 360],
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Phase Modal — Beautiful & Reusable */}
+        <StoryCreationPhases isVisible={showPhases} />
 
         {/* Error toast */}
         {error && (
@@ -451,11 +446,10 @@ export default function StartStory() {
                         setStoryType(type);
                         setShowStoryTypePopup(false);
                       }}
-                      className={`w-full p-4 sm:p-6 rounded-2xl border-4 text-left transition-all ${
-                        storyType === type
+                      className={`w-full p-4 sm:p-6 rounded-2xl border-4 text-left transition-all ${storyType === type
                           ? "border-[#6C5CE7] bg-gradient-to-r from-[#6C5CE7]/10 to-[#00BFA6]/10"
                           : "border-[#E5E5E5] hover:border-[#6C5CE7]"
-                      }`}
+                        }`}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -476,8 +470,7 @@ export default function StartStory() {
         </AnimatePresence>
 
         {/* Header */}
-        <motion.div
-          className="text-center mt-12 sm:mt-16 md:mt-24 px-4"
+        <motion.div className="text-center mt-12 sm:mt-16 md:mt-24 px-4"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
@@ -524,14 +517,13 @@ export default function StartStory() {
           </div>
         </motion.div>
 
-        {/* ---------- Sections ---------- */}
+        {/* Sections */}
         <ProtagonistSection
           ref={protagonistRef}
           expanded={expandedSections.protagonist}
           toggleExpanded={() => toggleSection("protagonist")}
           skipProtagonist={skipProtagonist}
           scrollToNext={() => foundationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          // protagonist props
           protagonistName={protagonistName}
           setProtagonistName={setProtagonistName}
           protagonistAge={protagonistAge}
@@ -591,7 +583,8 @@ export default function StartStory() {
         />
 
         {/* Begin adventure button */}
-        <motion.div className="text-center mt-12 sm:mt-16 px-4 mb-16 sm:mb-20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
+        <motion.div className="text-center mt-12 sm:mt-16 px-4 mb-16 sm:mb-20"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
           <motion.button
             onClick={handleBeginAdventure}
             className="px-8 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-[#6C5CE7] via-[#FF7675] to-[#00BFA6] text-white text-lg sm:text-2xl font-bold rounded-full shadow-2xl border-4 border-white"

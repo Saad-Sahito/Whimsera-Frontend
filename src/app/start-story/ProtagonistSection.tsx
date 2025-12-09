@@ -12,8 +12,7 @@ const ARCHETYPE_OPTIONS = [
   "Chosen One",
   "Anti-Hero",
   "Ordinary Person",
-  "Trickster",
-  "Let AI decide",
+  "Trickster"
 ];
 
 interface ProtagonistSectionProps {

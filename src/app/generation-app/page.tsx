@@ -48,7 +48,7 @@ function usePersistedState<T>(key: string, defaultValue: T): [T, (value: T) => v
 
 // === Types ===
 interface StorySegment {
-  type: "text" | "decision" | "save" | "status" | "saved" | "story_complete" | "act_transition" | "act_status" | "act_title" | "error";
+  type: "text" | "decision" | "save" | "status" | "saved" | "story_complete" | "act_transition" | "act_status" | "act_title" | "act_complete" | "error";
   scene_text?: string;
   question?: string;
   options?: number;
@@ -114,30 +114,30 @@ const TopLoader = ({ isLoading }: { isLoading: boolean }) => (
 function Navbar({ isDark }: { isDark: boolean }) {
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 shadow-md transition-colors duration-300 ${
-        isDark
-          ? "bg-gray-800/80 border-b border-gray-700 backdrop-blur-sm"
-          : "bg-white/80 border-b border-gray-200 backdrop-blur-sm"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-40 shadow-md transition-colors duration-300 ${isDark
+        ? "bg-gray-800/80 border-b border-gray-700 backdrop-blur-sm"
+        : "bg-white/80 border-b border-gray-200 backdrop-blur-sm"
+        }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <a
             href="/dashboard"
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              isDark
-                ? "bg-indigo-600 hover:bg-indigo-700 text-white"
-                : "bg-indigo-500 hover:bg-indigo-600 text-white"
-            }`}
+            className={`px-4 py-2 rounded-lg font-semibold transition-all ${isDark
+              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+              : "bg-indigo-500 hover:bg-indigo-600 text-white"
+              }`}
           >
             Back to Dashboard
           </a>
 
           <h1
-            className={`absolute left-1/2 transform -translate-x-1/2 text-lg sm:text-xl font-bold ${
-              isDark ? "text-gray-100" : "text-gray-800"
-            }`}
-            style={{ fontFamily: "'Annie Use Your Telescope', cursive" }}
+            className={`absolute left-1/2 transform -translate-x-1/2 text-lg sm:text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-800"
+              }`}
+            style={{
+              fontFamily: "'Annie Use Your Telescope', cursive",
+              fontSize: 28
+            }}
           >
             Whimsera Theatre
           </h1>
@@ -147,11 +147,10 @@ function Navbar({ isDark }: { isDark: boolean }) {
               href="/feedback"
               target="_blank"
               rel="noopener noreferrer"
-              className={`p-2 rounded-lg transition-all hover:scale-105 ${
-                isDark
-                  ? "text-gray-300 hover:bg-gray-700/50 hover:text-orange-400"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-orange-600"
-              }`}
+              className={`p-2 rounded-lg transition-all hover:scale-105 ${isDark
+                ? "text-gray-300 hover:bg-gray-700/50 hover:text-orange-400"
+                : "text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+                }`}
               title="Send Feedback"
             >
               <MessageCircle size={20} />
@@ -246,9 +245,8 @@ function LoadingSkeleton({ isDark }: { isDark: boolean }) {
 function SubtleStatusMessage({ message, isDark }: { message: string; isDark: boolean }) {
   return (
     <div
-      className={`text-center py-3 mb-4 text-sm font-medium animate-fade-in-out ${
-        isDark ? "text-gray-400" : "text-gray-500"
-      }`}
+      className={`text-center py-3 mb-4 text-sm font-medium animate-fade-in-out ${isDark ? "text-gray-400" : "text-gray-500"
+        }`}
     >
       {message}
     </div>
@@ -331,6 +329,18 @@ function GenerationAppContent() {
     };
   }, [statusMessage]);
 
+
+  const handleSaveAndStop = async () => {
+  // Optimistically remove the save prompt UI
+  setStorySegments((prev) => prev.filter((seg) => seg.type !== "save"));
+
+  // Send save request
+  await continueChapter();
+
+  // We'll disconnect as soon as we get the "saved" confirmation
+  // So we set a one-time flag that the WebSocket handler will check
+  (window as any)._pendingSaveAndStop = true;
+};
   // === Polling for Act ===
   const startPollingAct = async () => {
     if (pollingAct || currentChapter < totalChapters || currentActId > 0) return;
@@ -397,8 +407,8 @@ function GenerationAppContent() {
       const iterableText = Array.isArray(rawText)
         ? rawText
         : rawText && typeof rawText === "object"
-        ? Object.values(rawText)
-        : [];
+          ? Object.values(rawText)
+          : [];
 
       const segments: StorySegment[] = iterableText.map((seg: unknown, idx: number) => ({
         ...(seg as StorySegment),
@@ -409,8 +419,10 @@ function GenerationAppContent() {
       setInitialLoadCount(segments.length);
     } catch (err) {
       console.warn("Recoverable error loading segments:", err);
+      setError(err instanceof Error ? err.message : "Failed to load chapter data.");
       setStorySegments([]);
-    } finally {
+    }
+    finally {
       setIsLoadingStoryBox(false);
     }
   };
@@ -436,7 +448,7 @@ function GenerationAppContent() {
         setTimeout(() => setShowChapterComplete(false), 4000);
         setTotalChapters((prev) => prev + 1);
         setNewChapterAvailable(true);
-        disconnect;
+        disconnect();
         return;
       }
 
@@ -484,16 +496,32 @@ function GenerationAppContent() {
 
       // 5. Error
       if (message.type === "error") {
-        setError(message.message || "Unknown error");
+        // NEW: Special handling for monthly word limit
+        if (
+          message.message?.includes("monthly word count limit reached") ||
+          message.message?.includes("tier 'free'") ||
+          message.message?.includes("tier 'scribe'")
+        ) {
+          setError("Your monthly word count has exceeded.");
+        } else {
+          setError(message.message || "An unknown error occurred.");
+        }
         return;
       }
 
       // 6. Saved Confirmation
-      if (message.type === "saved") {
-        setShowSaveConfirmation(true);
-        setTimeout(() => setShowSaveConfirmation(false), 3000);
-        return;
-      }
+  if (message.type === "saved") {
+    setShowSaveConfirmation(true);
+    setTimeout(() => setShowSaveConfirmation(false), 3000);
+
+    // Check if user requested Save & Stop
+    if ((window as any)._pendingSaveAndStop) {
+      (window as any)._pendingSaveAndStop = false;
+      disconnect(); // Immediately close connection after save
+      return; // Prevent further processing
+    }
+    return;
+  }
 
       // 7. Save Handling (Auto vs Manual)
       if (message.type === "save") {
@@ -515,7 +543,15 @@ function GenerationAppContent() {
       setMessageQueue((prev) => [...prev, segment]);
     },
     onConnect: () => setError(null),
-    onError: (err) => setError(`WebSocket error: ${err}`),
+    onError: (err) => {
+      // Also catch it here if the error comes from the WebSocket connection itself
+      const errMsg = err?.toString() || "";
+      if (errMsg.includes("380") || errMsg.includes("monthly word count limit")) {
+        setError("Your monthly word count has exceeded.");
+      } else {
+        setError(`Connection error: ${errMsg}`);
+      }
+    },
   });
 
   // === Message Queue Processing ===
@@ -554,45 +590,68 @@ function GenerationAppContent() {
           },
           body: JSON.stringify({ user_id: userId, story_type: storyType }),
         });
-        const continueData = await continueResponse.json();
 
-        if (!continueResponse.ok || continueData.status !== "success") {
+        // THIS IS THE KEY PART
+        if (!continueResponse.ok) {
+          // Try to parse JSON error body
+          let errorDetail = "Failed to continue story";
+          try {
+            const errorBody = await continueResponse.json();
+            errorDetail = errorBody.detail || errorBody.message || errorDetail;
+          } catch {
+            // If not JSON, use status text
+            errorDetail = continueResponse.statusText;
+          }
+
+          // Detect your exact 380 case
+          if (
+            continueResponse.status === 380 &&
+            (errorDetail.includes("monthly word count limit reached") ||
+              errorDetail.includes("tier 'free'") ||
+              errorDetail.includes("tier 'scribe'"))
+          ) {
+            setError("Your monthly word count has exceeded.");
+            setIsLoading(false);
+            return; // Stop everything
+          }
+
+          // Any other non-200 → generic error
+          throw new Error(errorDetail);
+        }
+        // End of key part
+
+        const continueData = await continueResponse.json();
+        if (continueData.status !== "success") {
           throw new Error(continueData.message || "Failed to initialize story");
         }
 
+        // Rest of your success flow (progress fetch, metadata, etc.)
         const progressResponse = await fetch(
           `${backendUrl}/stories/progress/${userId}/${storyId}?story_type=${storyType}`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         const progressData = await progressResponse.json();
 
-        if (!progressResponse.ok) throw new Error("Failed to fetch story metadata.");
-        if (progressData.status !== "success")
-          throw new Error(progressData.message || "Failed to fetch story metadata");
+        if (!progressResponse.ok || progressData.status !== "success") {
+          throw new Error("Failed to fetch story metadata");
+        }
 
         const latestChapter = progressData.data?.latest_chapter_id || 1;
-        setStoryMetadata({
-          story_title: progressData.data?.story_title || "Untitled Story",
-          complete: progressData.data?.complete || false,
-          current_act_id: progressData.data?.current_act_id || 1,
-          total_acts: progressData.data?.total_acts || 1,
-          target_length: progressData.data?.target_length || 0,
-          pov: progressData.data?.pov || null,
-          genre: progressData.data?.genre || [],
-          story_type: progressData.data?.story_type || storyType,
-          tone_temp: progressData.data?.tone_temp || null,
-          model: progressData.data?.model || null,
-          blurb: progressData.data?.blurb || null,
-          image_data: progressData.data?.image_data || null,
-          public: progressData.data?.public || false,
-        });
+        setStoryMetadata({ ...progressData.data });
         setCurrentChapter(latestChapter);
         setTotalChapters(latestChapter);
-        setContinueSceneId(progressData.data?.continue_scene_id || null);
         setStoryWordCount(progressData.data?.story_word_count || 0);
         setIsStoryComplete(progressData.data?.complete || false);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Unknown error");
+
+
+
+      } catch (err: any) {
+        // Fallback — if somehow 380 slipped through
+        if (err.message?.includes("380") || err.message?.toLowerCase().includes("word count")) {
+          setError("Your monthly word count has exceeded.");
+        } else {
+          setError(err instanceof Error ? err.message : "Unknown error");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -695,11 +754,10 @@ function GenerationAppContent() {
         return (
           <motion.div
             key={key}
-            className={`mb-6 p-6 rounded-xl shadow-lg transition-all ${
-              isDarkMode
-                ? "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-700/50"
-                : "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-indigo-200"
-            }`}
+            className={`mb-6 p-6 rounded-xl shadow-lg transition-all ${isDarkMode
+              ? "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-700/50"
+              : "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-indigo-200"
+              }`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -713,19 +771,18 @@ function GenerationAppContent() {
                   key={idx}
                   onClick={() => !segment.user_choice && handleChoiceSelection(segment.id!, optionLabels[idx])}
                   disabled={!!segment.user_choice}
-                  className={`w-full text-left px-5 py-4 rounded-lg font-medium transition-all transform ${
-                    segment.user_choice === optionLabels[idx]
-                      ? isDarkMode
-                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-[1.02]"
-                        : "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg scale-[1.02]"
-                      : !!segment.user_choice
+                  className={`w-full text-left px-5 py-4 rounded-lg font-medium transition-all transform ${segment.user_choice === optionLabels[idx]
+                    ? isDarkMode
+                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-[1.02]"
+                      : "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg scale-[1.02]"
+                    : !!segment.user_choice
                       ? isDarkMode
                         ? "bg-gray-800 text-gray-600 cursor-not-allowed"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                       : isDarkMode
                         ? "bg-gray-800/50 text-gray-200 border border-indigo-700/30 hover:bg-gray-700/50 hover:border-indigo-600/50 hover:scale-[1.01]"
                         : "bg-white text-gray-800 border-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 hover:scale-[1.01]"
-                  }`}
+                    }`}
                 >
                   {optionLabels[idx]}
                 </button>
@@ -739,11 +796,10 @@ function GenerationAppContent() {
         return (
           <motion.div
             key={key}
-            className={`mb-6 p-6 rounded-xl text-center shadow-lg ${
-              isDarkMode
-                ? "bg-gradient-to-br from-teal-900/40 to-green-900/40 border border-teal-700/50"
-                : "bg-gradient-to-br from-teal-50 to-green-50 border-2 border-teal-200"
-            }`}
+            className={`mb-6 p-6 rounded-xl text-center shadow-lg ${isDarkMode
+              ? "bg-gradient-to-br from-teal-900/40 to-green-900/40 border border-teal-700/50"
+              : "bg-gradient-to-br from-teal-50 to-green-50 border-2 border-teal-200"
+              }`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -751,40 +807,164 @@ function GenerationAppContent() {
             <p className={`mb-4 text-lg font-medium ${isDarkMode ? "text-teal-200" : "text-teal-900"}`}>
               Would you like to save your story progress?
             </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleSaveStory}
-                className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
-                  isDarkMode
-                    ? "bg-gradient-to-r from-teal-600 to-green-600 text-white hover:shadow-teal-500/50"
-                    : "bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-teal-400/50"
-                }`}
-              >
-                Save Story
-              </button>
-              <button
-                onClick={handleRevertStory}
-                className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
-                  isDarkMode
-                    ? "bg-gradient-to-r from-red-600 to-orange-600 text-white hover:shadow-red-500/50"
-                    : "bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-red-400/50"
-                }`}
-              >
-                Revert to Previous Save
-              </button>
-            </div>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+  <button
+    onClick={handleSaveStory}
+    className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${isDarkMode
+      ? "bg-gradient-to-r from-teal-600 to-green-600 text-white hover:shadow-teal-500/50"
+      : "bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-teal-400/50"
+      }`}
+  >
+    Save & Continue
+  </button>
+
+  <button
+    onClick={handleSaveAndStop}
+    className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${isDarkMode
+      ? "bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-amber-500/50"
+      : "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-amber-400/50"
+      }`}
+  >
+    Save & Stop Generation
+  </button>
+
+  <button
+    onClick={handleRevertStory}
+    className={`px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${isDarkMode
+      ? "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:shadow-red-500/50"
+      : "bg-gradient-to-r from-red-500 to-rose-500 text-white hover:shadow-red-400/50"
+      }`}
+  >
+    Revert Changes
+  </button>
+</div>
           </motion.div>
         );
 
       case "act_transition":
+        // Special magical intermission when an Act is complete and next is brewing
+        if (segment.message === "transitioning") {
+          return (
+            <motion.div
+              key={key}
+              className={`mb-12 p-10 rounded-2xl shadow-2xl text-center border-2 overflow-hidden relative
+          ${isDarkMode
+                  ? "bg-gradient-to-br from-purple-900/70 via-indigo-900/60 to-pink-900/70 border-purple-500/60 backdrop-blur-md"
+                  : "bg-gradient-to-br from-purple-100 via-indigo-100 to-pink-100 border-purple-300 shadow-purple-200"
+                }`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.4, ease: "easeOut" }}
+            >
+              {/* Magical background glow */}
+              <div className="absolute inset-0 opacity-30">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-indigo-500 rounded-full blur-3xl animate-ping" />
+              </div>
+
+              <div className="relative z-10">
+                <motion.h3
+                  className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                  animate={{
+                    textShadow: [
+                      "0 0 20px rgba(168, 85, 247, 0.5)",
+                      "0 0 40px rgba(168, 85, 247, 0.8)",
+                      "0 0 20px rgba(168, 85, 247, 0.5)"
+                    ]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                >
+                  Act {segment.current_act_id} Complete
+                </motion.h3>
+
+                <p className={`text-lg md:text-xl mb-5 leading-relaxed font-medium ${isDarkMode ? "text-purple-200" : "text-purple-800"}`}>
+                  The curtain falls softly. The lights dim to embers.
+                </p>
+
+                <p className={`text-md md:text-lg italic max-w-2xl mx-auto ${isDarkMode ? "text-indigo-300" : "text-indigo-700"}`}>
+                  In the wings of imagination, scribes and muses are weaving the next act with starlight and wonder...
+                </p>
+
+                <p className={`mt-6 text-sm opacity-80 ${isDarkMode ? "text-purple-300" : "text-purple-600"}`}>
+                  Great stories pause to breathe. Your patience is part of the magic. Thank you.
+                </p>
+
+                {/* Floating magical orbs */}
+                <div className="flex justify-center mt-10 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className={`w-4 h-4 rounded-full ${isDarkMode ? "bg-purple-400 shadow-purple-400/50" : "bg-purple-500 shadow-purple-500/50"} shadow-lg`}
+                      animate={{
+                        y: [0, -30, 0],
+                        opacity: [0.6, 1, 0.6],
+                      }}
+                      transition={{
+                        duration: 3 + i * 0.5,
+                        repeat: Infinity,
+                        delay: i * 0.3,
+                        ease: "easeInOut",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          );
+        }
+
+        // Otherwise: Normal act transition (when starting a new act)
         return (
           <motion.div
             key={key}
-            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${
-              isDarkMode
-                ? "bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/50"
-                : "bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200"
-            }`}
+            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${isDarkMode
+              ? "bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/50"
+              : "bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200"
+              }`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <p className={`text-lg font-semibold mb-2 ${isDarkMode ? "text-purple-200" : "text-purple-900"}`}>
+              Act {segment.current_act_id} of {segment.total_acts}: {segment.act_title || "A New Act Begins"}
+            </p>
+            {segment.progress_percentage !== undefined && (
+              <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+                Progress: {(segment.progress_percentage || 0).toFixed(1)}%
+              </p>
+            )}
+          </motion.div>
+        );
+
+      case "act_status":
+        return (
+          <motion.div
+            key={key}
+            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${isDarkMode
+              ? "bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border border-blue-700/50"
+              : "bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200"
+              }`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <p className={`text-lg font-semibold mb-2 ${isDarkMode ? "text-blue-200" : "text-blue-900"}`}>
+              Act {segment.current_act_id} of {segment.total_acts}
+            </p>
+            <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+              Chapter {segment.latest_chapter_id} | Progress: {(segment.progress_percentage || 0).toFixed(1)}%
+            </p>
+          </motion.div>
+        );
+      case "act_complete":
+        return (
+          <motion.div
+            key={key}
+            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${isDarkMode
+              ? "bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/50"
+              : "bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200"
+              }`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -798,37 +978,14 @@ function GenerationAppContent() {
           </motion.div>
         );
 
-      case "act_status":
-        return (
-          <motion.div
-            key={key}
-            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${
-              isDarkMode
-                ? "bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border border-blue-700/50"
-                : "bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200"
-            }`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <p className={`text-lg font-semibold mb-2 ${isDarkMode ? "text-blue-200" : "text-blue-900"}`}>
-              Act {segment.current_act_id} of {segment.total_acts}
-            </p>
-            <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
-              Chapter {segment.latest_chapter_id} | Progress: {(segment.progress_percentage || 0).toFixed(1)}%
-            </p>
-          </motion.div>
-        );
-
       case "story_complete":
         return (
           <motion.div
             key={key}
-            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${
-              isDarkMode
-                ? "bg-gradient-to-br from-green-900/40 to-teal-900/40 border border-green-700/50"
-                : "bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200"
-            }`}
+            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${isDarkMode
+              ? "bg-gradient-to-br from-green-900/40 to-teal-900/40 border border-green-700/50"
+              : "bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200"
+              }`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -850,11 +1007,10 @@ function GenerationAppContent() {
   // === Sidebar ===
   const sidebarContent = (
     <div
-      className={`rounded-2xl p-6 shadow-xl sticky top-24 transition-colors ${
-        isDarkMode
-          ? "bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700"
-          : "bg-gradient-to-br from-white to-gray-50 border border-gray-200"
-      }`}
+      className={`rounded-2xl p-6 shadow-xl sticky top-24 transition-colors ${isDarkMode
+        ? "bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700"
+        : "bg-gradient-to-br from-white to-gray-50 border border-gray-200"
+        }`}
     >
       <h2
         className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
@@ -912,9 +1068,8 @@ function GenerationAppContent() {
           <motion.p
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`text-xs text-center font-medium ${
-              isDarkMode ? "text-green-400" : "text-green-600"
-            }`}
+            className={`text-xs text-center font-medium ${isDarkMode ? "text-green-400" : "text-green-600"
+              }`}
           >
             New chapter available!
           </motion.p>
@@ -947,45 +1102,75 @@ function GenerationAppContent() {
       <button
         onClick={handleContinueStory}
         disabled={isConnected || currentChapter < totalChapters || isStoryComplete}
-        className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all transform shadow-lg ${
-          isConnected || currentChapter < totalChapters || isStoryComplete
-            ? isDarkMode
-              ? "bg-gray-700 cursor-not-allowed text-gray-500"
-              : "bg-gray-300 cursor-not-allowed text-gray-500"
-            : "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white hover:scale-105 hover:shadow-xl"
-        }`}
+        className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all transform shadow-lg ${isConnected || currentChapter < totalChapters || isStoryComplete
+          ? isDarkMode
+            ? "bg-gray-700 cursor-not-allowed text-gray-500"
+            : "bg-gray-300 cursor-not-allowed text-gray-500"
+          : "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white hover:scale-105 hover:shadow-xl"
+          }`}
       >
         {isStoryComplete
           ? "Story Complete"
           : isConnected
-          ? "Generating..."
-          : currentChapter < totalChapters
-          ? "Viewing Old Chapter"
-          : "Continue Story"}
+            ? "Generating..."
+            : currentChapter < totalChapters
+              ? "Viewing Old Chapter"
+              : "Continue Story"}
       </button>
     </div>
   );
 
   // === Render ===
-  if (authLoading)
+  if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-[#2D3436]">
+      <div className="min-h-screen flex items-center justify-center text-[#2D3436] relative">
         <TopLoader isLoading={true} />
-        Checking authentication...
+        Checking authentication…
+
+        {error && (
+          <div
+            className={`fixed top-20 right-4 z-50 max-w-md rounded-xl shadow-2xl px-6 py-4 text-white font-medium animate-slide-in
+            ${error.includes("monthly") ? "bg-gradient-to-r from-orange-600 to-red-600"
+                : "bg-gradient-to-r from-red-500 to-pink-500"}
+          `}
+          >
+            {error}
+          </div>
+        )}
       </div>
     );
+  }
 
+  const isWordLimitError = error === "Your monthly word count has exceeded.";
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${isDarkMode ? "bg-gray-900 text-gray-100" : "bg-slate-50 text-gray-900"}`}>
       <TopLoader isLoading={showLoader} />
       <Navbar isDark={isDarkMode} />
 
+      {/* Enhanced Error Toast */}
       {error && (
-        <div className="fixed top-20 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-xl shadow-2xl z-50 max-w-md animate-slide-in">
-          {error}
-          <button className="ml-4 text-white underline font-medium" onClick={() => setError(null)}>
-            Close
-          </button>
+        <div
+          className={`fixed top-20 right-4 z-50 max-w-md rounded-xl shadow-2xl px-6 py-4 text-white font-medium animate-slide-in ${isWordLimitError
+            ? "bg-gradient-to-r from-orange-600 to-red-600"
+            : "bg-gradient-to-r from-red-500 to-pink-500"
+            }`}
+        >
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            {!isWordLimitError && (
+              <button
+                onClick={() => setError(null)}
+                className="ml-6 text-white/80 hover:text-white font-bold"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          {isWordLimitError && (
+            <p className="text-sm mt-2 opacity-90">
+              Upgrade your plan to keep writing!
+            </p>
+          )}
         </div>
       )}
       {showSaveConfirmation && (
@@ -1114,8 +1299,8 @@ function GenerationAppContent() {
                   {currentChapter < totalChapters
                     ? `Viewing Chapter ${currentChapter}. Select the latest chapter to continue.`
                     : isStoryComplete
-                    ? "The story has concluded."
-                    : 'Click "Continue Story" to begin.'}
+                      ? "The story has concluded."
+                      : 'Click "Continue Story" to begin.'}
                 </p>
               )}
             </div>

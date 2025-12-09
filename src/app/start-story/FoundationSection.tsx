@@ -34,99 +34,123 @@ const GENRE_AGE_RATINGS: Record<string, string> = {
   "Sci-Fi": "A/T/M"
 };
 
-// Sub-genre mappings with age ratings
-const SUB_GENRES: Record<string, Array<{name: string, rating: string}>> = {
+// Sub-genre mappings with realistic age ratings (A = All ages, T = Teen 13+, M = Mature 17+)
+const SUB_GENRES: Record<
+  string,
+  Array<{ name: string; rating: string }>
+> = {
   "Thriller/Suspense": [
-    { name: "Psychological", rating: "T/M" },
-    { name: "Action", rating: "T/M" },
-    { name: "Legal", rating: "A/T" },
-    { name: "Domestic", rating: "T/M" },
-    { name: "Conspiracy", rating: "A/T" }
+    { name: "Psychological Thriller", rating: "T/M" },
+    { name: "Action Thriller", rating: "T/M" },
+    { name: "Legal Thriller", rating: "T" },
+    { name: "Domestic Thriller", rating: "T/M" },
+    { name: "Conspiracy Thriller", rating: "T/M" },
+    { name: "Spy/Espionage", rating: "T/M" },
+    { name: "Medical Thriller", rating: "T/M" },
   ],
   "Mystery": [
-    { name: "Whodunit", rating: "A" },
-    { name: "Cozy", rating: "A" },
+    { name: "Cozy Mystery", rating: "A" },
+    { name: "Whodunit", rating: "A/T" },
     { name: "Hard-Boiled", rating: "T/M" },
+    { name: "Police Procedural", rating: "T" },
+    { name: "Private Investigator", rating: "T/M" },
     { name: "Locked-Room", rating: "A/T" },
-    { name: "Historical", rating: "A/T" }
+    { name: "Noir Mystery", rating: "M" },
+    { name: "Caper/Heist Mystery", rating: "T" },
   ],
   "Horror": [
     { name: "Supernatural", rating: "T/M" },
-    { name: "Psychological", rating: "T/M" },
+    { name: "Psychological Horror", rating: "T/M" },
     { name: "Slasher", rating: "M" },
     { name: "Body Horror", rating: "M" },
-    { name: "Folk Horror", rating: "T/M" }
+    { name: "Folk Horror", rating: "T/M" },
+    { name: "Cosmic/Lovecraftian", rating: "M" },
+    { name: "Gothic Horror", rating: "T/M" },
+    { name: "Zombie", rating: "M" },
   ],
   "Romance": [
-    { name: "Contemporary", rating: "A/T" },
-    { name: "Historical", rating: "A/T" },
-    { name: "Second-Chance", rating: "T/M" },
-    { name: "Enemies-to-Lovers", rating: "T/M" },
-    { name: "Slow-Burn", rating: "A/T" }
+    { name: "Contemporary Romance", rating: "A/T" },
+    { name: "Historical Romance", rating: "A/T" },
+    { name: "Paranormal Romance", rating: "T/M" },
+    { name: "Romantic Suspense", rating: "T/M" },
+    { name: "Romantic Comedy", rating: "A/T" },
+    { name: "Sports Romance", rating: "T" },
+    { name: "Dark Romance", rating: "M" },
+    { name: "Fantasy Romance", rating: "T/M" },
   ],
   "Comedy": [
     { name: "Romantic Comedy", rating: "A/T" },
-    { name: "Satire", rating: "A/T" },
-    { name: "Slapstick", rating: "A" },
     { name: "Dark Comedy", rating: "M" },
-    { name: "Buddy Comedy", rating: "A/T" }
+    { name: "Satire", rating: "T/M" },
+    { name: "Slapstick", rating: "A" },
+    { name: "Buddy Comedy", rating: "A/T" },
+    { name: "Screwball Comedy", rating: "A/T" },
+    { name: "Parody", rating: "T" },
   ],
   "Drama": [
-    { name: "Family", rating: "A/T" },
-    { name: "Social Issue", rating: "T/M" },
-    { name: "Character Study", rating: "T/M" },
+    // Drama is more theme-driven than sub-genre-driven, but these are commonly accepted
+    { name: "Family Drama", rating: "T" },
     { name: "Coming-of-Age", rating: "A/T" },
-    { name: "Melodrama", rating: "T" }
+    { name: "Psychological Drama", rating: "T/M" },
+    { name: "Social Issue Drama", rating: "T/M" },
+    { name: "Melodrama", rating: "T" },
+    { name: "Historical Drama", rating: "T" },
   ],
   "Tragedy": [
-    { name: "Classical", rating: "T/M" },
-    { name: "Domestic", rating: "T/M" },
-    { name: "Modern", rating: "T" },
+    { name: "Classical Tragedy", rating: "T/M" },
     { name: "Revenge Tragedy", rating: "M" },
-    { name: "Fallen Hero", rating: "T/M" }
+    { name: "Domestic Tragedy", rating: "T/M" },
+    { name: "Modern Tragedy", rating: "T/M" },
+    { name: "Shakespearean Tragedy", rating: "T/M" },
   ],
   "Adventure": [
-    { name: "Quest", rating: "A" },
-    { name: "Survival", rating: "A/T" },
-    { name: "Exploration", rating: "A" },
-    { name: "Treasure Hunt", rating: "A" },
-    { name: "Road Trip", rating: "A/T" }
+    { name: "Swashbuckling", rating: "A/T" },
+    { name: "Pulp Adventure", rating: "T" },
+    { name: "Survival Adventure", rating: "T/M" },
+    { name: "Jungle/Exploration", rating: "A/T" },
+    { name: "High-Seas/Pirate", rating: "T" },
   ],
   "Crime": [
-    { name: "Heist", rating: "A/T" },
+    { name: "Heist/Caper", rating: "T" },
     { name: "Police Procedural", rating: "T" },
     { name: "Noir", rating: "M" },
-    { name: "True Crime-Style", rating: "T/M" },
-    { name: "Gangster", rating: "M" }
+    { name: "Gangster/Mafia", rating: "M" },
+    { name: "True Crime-Inspired", rating: "T/M" },
+    { name: "Organized Crime", rating: "M" },
   ],
   "Fantasy": [
     { name: "High Fantasy", rating: "A/T" },
-    { name: "Urban Fantasy", rating: "T" },
+    { name: "Urban Fantasy", rating: "T/M" },
     { name: "Dark Fantasy", rating: "M" },
-    { name: "Portal Fantasy", rating: "A" },
-    { name: "Mythic Fantasy", rating: "A/T" }
+    { name: "Portal/Isekai", rating: "A/T" },
+    { name: "Mythic/Fairy-Tale", rating: "A/T" },
+    { name: "Grimdark", rating: "M" },
+    { name: "Sword & Sorcery", rating: "T/M" },
   ],
   "Sci-Fi": [
     { name: "Space Opera", rating: "A/T" },
     { name: "Hard Sci-Fi", rating: "A/T" },
-    { name: "Dystopian", rating: "T/M" },
     { name: "Cyberpunk", rating: "M" },
-    { name: "Time Travel", rating: "A/T" }
-  ]
+    { name: "Dystopian", rating: "T/M" },
+    { name: "Post-Apocalyptic", rating: "T/M" },
+    { name: "Military Sci-Fi", rating: "T/M" },
+    { name: "Time Travel", rating: "A/T" },
+    { name: "First Contact", rating: "A/T" },
+  ],
 };
 
 const genreColors: Record<string, string> = {
-  Fantasy: "#6C5CE7",
-  Mystery: "#00BFA6",
-  Comedy: "#FFD166",
-  "Sci-Fi": "#74C0FF",
-  Romance: "#FF7675",
-  Adventure: "#00CEC9",
-  Horror: "#E17055",
-  "Thriller/Suspense": "#0984E3",
-  Tragedy: "#A29BFE",
-  Crime: "#A29BFE",
-  Drama: "#A29BFE",
+  Fantasy: "#6B4CE7",        // Vibrant purple (magic & wonder)
+  "Sci-Fi": "#74C0FF",       // Cool future-blue
+  Mystery: "#00BFA6",        // Teal (intrigue, clues, calm deduction)
+  Comedy: "#FFD166",         // Sunny yellow (fun, laughter)
+  Romance: "#FF7675",        // Warm coral-pink (love, passion)
+  Adventure: "#00CEC9",      // Bright turquoise (exploration, sea & sky)
+  Horror: "#E17055",            // Burnt orange-red (fear, blood, autumn nights)
+  "Thriller/Suspense": "#0984E3", // Deep electric blue (tension, night)
+  Tragedy: "#2D132C",        // Very dark purple/plum – mourning, fate, classical theater drapes
+  Crime: "#2F3645",          // Gunmetal / charcoal gray – noir alleys, moral ambiguity, detective trench coats
+  Drama: "#576574",          // Muted steel blue-gray – emotional weight, realism, human struggle
 };
 
 const povOptions = ["First-person", "Third-person limited"];

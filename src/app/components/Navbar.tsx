@@ -23,10 +23,10 @@ export default function Navbar() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Calculate ripple size using clamp equivalent
-    const clampValue = (min: number, val: number, max: number) => Math.min(Math.max(min, val), max);
-    const vw = window.innerWidth * 0.05; // 5vw in pixels
-    const rippleSize = clampValue(30, vw, 50); // clamp(30px, 5vw, 50px)
+    const clampValue = (min: number, val: number, max: number) =>
+      Math.min(Math.max(min, val), max);
+    const vw = window.innerWidth * 0.05;
+    const rippleSize = clampValue(30, vw, 50);
 
     const uniqueId = Date.now() + rippleCounter++;
     setRipples((prev) => [...prev, { id: uniqueId, x, y }]);
@@ -51,9 +51,10 @@ export default function Navbar() {
       <div className="absolute inset-0 pointer-events-none overflow-visible">
         <AnimatePresence>
           {ripples.map((r) => {
-            const clampValue = (min: number, val: number, max: number) => Math.min(Math.max(min, val), max);
-            const vw = window.innerWidth * 0.05; // 5vw in pixels
-            const rippleSize = clampValue(30, vw, 50); // clamp(30px, 5vw, 50px)
+            const clampValue = (min: number, val: number, max: number) =>
+              Math.min(Math.max(min, val), max);
+            const vw = window.innerWidth * 0.05;
+            const rippleSize = clampValue(30, vw, 50);
             return (
               <motion.div
                 key={r.id}
@@ -91,9 +92,14 @@ export default function Navbar() {
         <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
           Stories
         </button>
-        <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
-          Pricing
-        </button>
+
+        {/* Pricing link always visible as text button */}
+        <Link href="/pricing">
+          <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
+            Pricing
+          </button>
+        </Link>
+
         <Link href="/feedback">
           <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
             Give Feedback
@@ -102,11 +108,20 @@ export default function Navbar() {
 
         {/* Conditional rendering */}
         {!isAuthenticated ? (
-          <Link href="/login">
-            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-md font-poppins font-bold text-sm sm:text-base md:text-lg bg-[#FFD166] text-[#2D3436] hover:bg-[#FF7675] hover:text-white transition">
-              Start For Free
-            </button>
-          </Link>
+          <>
+            {/* Extra prominent Pricing button only for unauthenticated users */}
+            <Link href="/pricing">
+              <button className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg font-poppins font-bold text-sm sm:text-base bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30 hover:border-[#FFD166] transition">
+                Pricing
+              </button>
+            </Link>
+
+            <Link href="/login">
+              <button className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg font-poppins font-bold text-sm sm:text-base bg-[#FFD166] text-[#2D3436] hover:bg-[#FF7675] hover:text-white transition">
+                Start For Free
+              </button>
+            </Link>
+          </>
         ) : (
           <Link href="/dashboard">
             <FaUserCircle className="text-white text-2xl sm:text-3xl md:text-4xl hover:text-[#FFD166] transition-colors cursor-pointer" />

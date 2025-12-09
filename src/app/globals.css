@@ -43,15 +43,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-fredoka);
-  cursor: url("/cursors/wand-rotated.png") 5 0, auto !important;
+  /* cursor: url("/cursors/wand-rotated.png") 5 0, auto !important; */
 }
 
-/* === Global Wand Cursor === */
-*,
-*::before,
-*::after {
-  cursor: url("/cursors/wand-rotated.png") 5 0, auto !important;
-}
+
 
 /* === Hover Glow Effect === */
 a:hover,
