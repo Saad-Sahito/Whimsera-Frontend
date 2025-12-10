@@ -89,11 +89,10 @@ export default function Navbar() {
 
       {/* Right side buttons */}
       <div className="flex flex-wrap items-center space-x-3 sm:space-x-4 md:space-x-6 relative z-10">
-        <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
+        {/* <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
           Stories
-        </button>
+        </button> */}
 
-        {/* Pricing link always visible as text button */}
         <Link href="/pricing">
           <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
             Pricing
@@ -106,15 +105,22 @@ export default function Navbar() {
           </button>
         </Link>
 
+        {/* New Community Stories Button */}
+        <Link href="/community-stories">
+          <button className="text-white text-sm sm:text-base md:text-lg font-poppins font-bold border-b-2 border-transparent hover:border-[#FFD166] transition">
+            Community Stories
+          </button>
+        </Link>
+
         {/* Conditional rendering */}
         {!isAuthenticated ? (
           <>
             {/* Extra prominent Pricing button only for unauthenticated users */}
-            <Link href="/pricing">
+            {/* <Link href="/pricing">
               <button className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg font-poppins font-bold text-sm sm:text-base bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30 hover:border-[#FFD166] transition">
                 Pricing
               </button>
-            </Link>
+            </Link> */}
 
             <Link href="/login">
               <button className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg font-poppins font-bold text-sm sm:text-base bg-[#FFD166] text-[#2D3436] hover:bg-[#FF7675] hover:text-white transition">

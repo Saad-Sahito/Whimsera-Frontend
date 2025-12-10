@@ -109,7 +109,7 @@ const ProtagonistSection = forwardRef<HTMLDivElement, ProtagonistSectionProps>(
             >
               <div className="bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] text-white rounded-full px-6 sm:px-8 py-3 sm:py-4 shadow-lg border-4 border-white">
                 <span className="text-xs sm:text-sm font-bold block" style={{ fontFamily: "Poppins, sans-serif" }}>
-                  CHAPTER 1
+                  CHAPTER 2
                 </span>
                 <span className="text-xl sm:text-2xl font-bold" style={{ fontFamily: "Fredoka, sans-serif" }}>
                   The Protagonist

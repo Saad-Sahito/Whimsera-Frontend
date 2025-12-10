@@ -88,7 +88,6 @@ const SUB_GENRES: Record<
     { name: "Parody", rating: "T" },
   ],
   "Drama": [
-    // Drama is more theme-driven than sub-genre-driven, but these are commonly accepted
     { name: "Family Drama", rating: "T" },
     { name: "Coming-of-Age", rating: "A/T" },
     { name: "Psychological Drama", rating: "T/M" },
@@ -301,7 +300,7 @@ const FoundationSection = forwardRef<HTMLDivElement, FoundationSectionProps>(
             >
               <div className="bg-gradient-to-r from-[#FF7675] to-[#FFD166] text-white rounded-full px-6 sm:px-8 py-3 sm:py-4 shadow-lg border-4 border-white">
                 <span className="text-xs sm:text-sm font-bold block" style={{ fontFamily: "Poppins, sans-serif" }}>
-                  CHAPTER 2
+                  CHAPTER 1
                 </span>
                 <span className="text-xl sm:text-2xl font-bold" style={{ fontFamily: "Fredoka, sans-serif" }}>
                   The Foundation
@@ -434,38 +433,58 @@ const FoundationSection = forwardRef<HTMLDivElement, FoundationSectionProps>(
                     </div>
 
                     {/* Tone */}
-                    <div className="max-w-3xl mx-auto">
-                      <h3 className="text-2xl sm:text-3xl font-bold text-center mb-2 text-[#2D3436]" style={{ fontFamily: "Fredoka, sans-serif" }}>
-                        What mood shall enchant your tale?
-                      </h3>
-                      <p className="text-center text-[#2D3436] mb-6 sm:mb-8 text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
-                        From playful to intense
-                      </p>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="20"
-                        value={tone}
-                        onChange={(e) => setTone(Number(e.target.value))}
-                        className="w-full h-3 rounded-full appearance-none cursor-pointer"
-                        style={{
-                          background: `linear-gradient(to right, ${toneColors.join(", ")})`,
-                        }}
-                      />
-                      <div className="flex justify-between mt-4 sm:mt-6">
-                        {toneLabels.map((lbl, i) => (
-                          <motion.span
-                            key={i}
-                            className={`text-center font-bold text-xs sm:text-sm ${tone === i * 20 ? "scale-125" : ""}`}
-                            style={{ color: toneColors[i], fontFamily: "Fredoka, sans-serif" }}
-                            animate={tone === i * 20 ? { y: [0, -5, 0] } : {}}
-                          >
-                            {lbl}
-                          </motion.span>
-                        ))}
-                      </div>
-                    </div>
+<div className="max-w-3xl mx-auto">
+  <h3 className="text-2xl sm:text-3xl font-bold text-center mb-2 text-[#2D3436]" style={{ fontFamily: "Fredoka, sans-serif" }}>
+    What mood shall enchant your tale?
+  </h3>
+  <p className="text-center text-[#2D3436] mb-6 sm:mb-8 text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
+    From playful to intense
+  </p>
+  <input
+    type="range"
+    min="0"
+    max="100"
+    step="20"
+    value={tone}
+    onChange={(e) => setTone(Number(e.target.value))}
+    className="w-full h-3 rounded-full appearance-none cursor-pointer"
+    style={{
+      background: `linear-gradient(to right, ${toneColors.join(", ")})`,
+    }}
+  />
+
+  {/* Mobile: show only the active label | Desktop: show all labels */}
+  <div className="mt-4 sm:mt-6">
+    {/* Desktop view – all labels */}
+    <div className="hidden sm:flex justify-between">
+      {toneLabels.map((lbl, i) => (
+        <motion.span
+          key={i}
+          className={`text-center font-bold text-xs sm:text-sm ${tone === i * 20 ? "scale-125" : ""}`}
+          style={{ color: toneColors[i], fontFamily: "Fredoka, sans-serif" }}
+          animate={tone === i * 20 ? { y: [0, -5, 0] } : {}}
+        >
+          {lbl}
+        </motion.span>
+      ))}
+    </div>
+
+    {/* Mobile view – only the current label */}
+    <div className="sm:hidden text-center">
+      <motion.span
+        key={tone} // forces re-animation when value changes
+        className="inline-block font-bold text-lg text-[#2D3436]"
+        style={{ color: toneColors[tone / 20], fontFamily: "Fredoka, sans-serif" }}
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -10, opacity: 0 }}
+      >
+        {toneLabels[tone / 20]}
+      </motion.span>
+    </div>
+  </div>
+</div>
+
 
                     {/* POV */}
                     <div className="max-w-3xl mx-auto">
@@ -495,36 +514,56 @@ const FoundationSection = forwardRef<HTMLDivElement, FoundationSectionProps>(
                       </div>
                     </div>
 
-                    {/* Length */}
-                    <div className="max-w-3xl mx-auto">
-                      <h3 className="text-2xl sm:text-3xl font-bold text-center mb-2 text-[#2D3436]" style={{ fontFamily: "Fredoka, sans-serif" }}>
-                        How epic shall your journey be?
-                      </h3>
-                      <p className="text-center text-[#2D3436] mb-6 sm:mb-8 text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
-                        From a quick tale to an endless saga
-                      </p>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="20"
-                        value={storyLength}
-                        onChange={(e) => setStoryLength(Number(e.target.value))}
-                        className="w-full h-3 rounded-full appearance-none bg-gradient-to-r from-[#FF7675] to-[#FFD166] cursor-pointer"
-                      />
-                      <div className="flex justify-between mt-4 sm:mt-6">
-                        {lengthLabels.map((lbl, i) => (
-                          <motion.span
-                            key={i}
-                            className={`text-center font-bold text-xs ${storyLength === i * 20 ? "scale-125 text-[#FF7675]" : "text-[#2D3436] opacity-50"}`}
-                            style={{ fontFamily: "Fredoka, sans-serif" }}
-                            animate={storyLength === i * 20 ? { y: [0, -5, 0] } : {}}
-                          >
-                            {lbl}
-                          </motion.span>
-                        ))}
-                      </div>
-                    </div>
+                    
+{/* Length */}
+<div className="max-w-3xl mx-auto">
+  <h3 className="text-2xl sm:text-3xl font-bold text-center mb-2 text-[#2D3436]" style={{ fontFamily: "Fredoka, sans-serif" }}>
+    How epic shall your journey be?
+  </h3>
+  <p className="text-center text-[#2D3436] mb-6 sm:mb-8 text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
+    From a quick tale to an endless saga
+  </p>
+  <input
+    type="range"
+    min="0"
+    max="100"
+    step="20"
+    value={storyLength}
+    onChange={(e) => setStoryLength(Number(e.target.value))}
+    className="w-full h-3 rounded-full appearance-none bg-gradient-to-r from-[#FF7675] to-[#FFD166] cursor-pointer"
+  />
+
+  {/* Mobile: show only the active label | Desktop: show all labels */}
+  <div className="mt-4 sm:mt-6">
+    {/* Desktop view – all labels */}
+    <div className="hidden sm:flex justify-between">
+      {lengthLabels.map((lbl, i) => (
+        <motion.span
+          key={i}
+          className={`text-center font-bold text-xs ${storyLength === i * 20 ? "scale-125 text-[#FF7675]" : "text-[#2D3436] opacity-50"}`}
+          style={{ fontFamily: "Fredoka, sans-serif" }}
+          animate={storyLength === i * 20 ? { y: [0, -5, 0] } : {}}
+        >
+          {lbl}
+        </motion.span>
+      ))}
+    </div>
+
+    {/* Mobile view – only the current label */}
+    <div className="sm:hidden text-center">
+      <motion.span
+        key={storyLength}
+        className="inline-block font-bold text-lg text-[#FF7675]"
+        style={{ fontFamily: "Fredoka, sans-serif" }}
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -10, opacity: 0 }}
+      >
+        {lengthLabels[storyLength / 20]}
+      </motion.span>
+    </div>
+  </div>
+</div>
 
                     {/* Mobile next button */}
                     <div className="lg:hidden flex justify-center mt-8">

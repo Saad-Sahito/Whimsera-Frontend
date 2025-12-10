@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import ProtagonistSection from "./ProtagonistSection";
 import FoundationSection from "./FoundationSection";
 import MagicSection from "./MagicSection";
-import StoryCreationPhases from "./StoryCreationPhases"; 
+import StoryCreationPhases from "./StoryCreationPhases";
 
 const GRADIENT_COLORS = [
   "rgba(108, 92, 231, 0.3)",
@@ -26,8 +26,7 @@ export default function StartStory() {
   const router = useRouter();
 
   // ---------- Global UI ----------
-  const [showStoryTypePopup, setShowStoryTypePopup] = useState(false);
-  const [storyType, setStoryType] = useState<"interactive" | "classic">("classic");
+  // Removed: showStoryTypePopup, storyType state (now hard-coded)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -171,7 +170,7 @@ export default function StartStory() {
     setProtagonistFear("");
     setProtagonistRelationships("");
     setProtagonistPhysicalDescription("");
-    foundationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    magicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   // ---------- Title generator ----------
@@ -199,7 +198,7 @@ export default function StartStory() {
     }
   };
 
-  // ---------- Build initial payload ----------
+  // ---------- Build initial payload (story_type is now always "classic") ----------
   const getInitialStoryData = () => ({
     POV: selectedPOV,
     Tone: tone,
@@ -209,7 +208,7 @@ export default function StartStory() {
     Length: storyLength,
     Setting: setting,
     user_id: userId,
-    story_type: storyType,
+    story_type: "classic", // ← Hard-coded
     story_id: null,
     "Guide Prose": selectedVoice ? [selectedVoice] : [""],
     "Additional Themes": selectedThemes,
@@ -236,9 +235,9 @@ export default function StartStory() {
     try {
       const backend = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-      // 1. Initialize story
+      // 1. Initialize story (always classic)
       const initRes = await fetch(
-        `${backend}/stories/initialize_story?user_id=${userId}&story_type=${storyType}`,
+        `${backend}/stories/initialize_story?user_id=${userId}&story_type=classic`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
@@ -250,7 +249,6 @@ export default function StartStory() {
 
       // 2. Generate premise
       const payload = { ...getInitialStoryData(), story_id };
-      console.log(payload)
       const premiseRes = await fetch(`${backend}/premise`, {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
@@ -260,7 +258,7 @@ export default function StartStory() {
       if (!premiseRes.ok) {
         const errorText = await premiseRes.text();
         let errorData;
-        try { errorData = JSON.parse(errorText); } catch {}
+        try { errorData = JSON.parse(errorText); } catch { }
         if (premiseRes.status === 390) {
           throw new Error(errorData?.detail || "Inappropriate words found in user context");
         } else if (premiseRes.status === 380) {
@@ -270,8 +268,8 @@ export default function StartStory() {
         }
       }
 
-      // Success → redirect
-      router.push(`/generation-app?story_id=${story_id}&story_type=${storyType}`);
+      // Success → redirect (always classic)
+      router.push(`/generation-app?story_id=${story_id}&story_type=classic`);
     } catch (e: any) {
       setError(e.message ?? "Failed to create story");
       setShowPhases(false);
@@ -400,7 +398,7 @@ export default function StartStory() {
           )}
         </AnimatePresence>
 
-        {/* Phase Modal — Beautiful & Reusable */}
+        {/* Phase Modal */}
         <StoryCreationPhases isVisible={showPhases} />
 
         {/* Error toast */}
@@ -418,56 +416,7 @@ export default function StartStory() {
           </motion.div>
         )}
 
-        {/* Story-type popup */}
-        <AnimatePresence>
-          {showStoryTypePopup && (
-            <motion.div
-              className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 px-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowStoryTypePopup(false)}
-            >
-              <motion.div
-                className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl"
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-[#2D3436]" style={{ fontFamily: "Fredoka, sans-serif" }}>
-                  Choose Your Journey
-                </h2>
-                <div className="space-y-4">
-                  {(["interactive", "classic"] as const).map((type) => (
-                    <motion.button
-                      key={type}
-                      onClick={() => {
-                        setStoryType(type);
-                        setShowStoryTypePopup(false);
-                      }}
-                      className={`w-full p-4 sm:p-6 rounded-2xl border-4 text-left transition-all ${storyType === type
-                          ? "border-[#6C5CE7] bg-gradient-to-r from-[#6C5CE7]/10 to-[#00BFA6]/10"
-                          : "border-[#E5E5E5] hover:border-[#6C5CE7]"
-                        }`}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <h3 className="text-lg sm:text-xl font-bold mb-2 text-[#2D3436]" style={{ fontFamily: "Fredoka, sans-serif" }}>
-                        {type === "interactive" ? "Interactive Adventure" : "Classic Narrative"}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-[#2D3436]" style={{ fontFamily: "Poppins, sans-serif" }}>
-                        {type === "interactive"
-                          ? "Shape the story with your choices and decisions"
-                          : "Experience a traditional, flowing story"}
-                      </p>
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* REMOVED: Story-type popup & selector button entirely */}
 
         {/* Header */}
         <motion.div className="text-center mt-12 sm:mt-16 md:mt-24 px-4"
@@ -494,30 +443,35 @@ export default function StartStory() {
           </motion.p>
         </motion.div>
 
-        {/* Story-type selector */}
+        {/* Optional hint (still useful) */}
         <motion.div className="flex justify-center mt-6 sm:mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-          <div className="relative group">
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-[#6C5CE7] to-[#00BFA6] rounded-full blur-md opacity-50"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.button
-              onClick={() => setShowStoryTypePopup(true)}
-              className="relative border-4 border-[#6C5CE7] rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-bold text-[#2D3436] bg-white backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-[#00BFA6] shadow-2xl transition-all hover:shadow-[0_0_30px_rgba(108,92,231,0.5)]"
-              style={{ fontFamily: "Fredoka, sans-serif" }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {storyType === "interactive" ? "Interactive Adventure" : "Classic Narrative"}
-            </motion.button>
-            <p className="text-xs text-[#2D3436] mt-2 opacity-60 italic text-center" style={{ fontFamily: "Poppins, sans-serif" }}>
-              All fields are optional – fill what inspires you!
-            </p>
-          </div>
+          <p className="text-xs text-[#2D3436] opacity-60 italic text-center" style={{ fontFamily: "Poppins, sans-serif" }}>
+            All fields are optional – fill what inspires you!
+          </p>
         </motion.div>
 
         {/* Sections */}
+        <FoundationSection
+          ref={foundationRef}
+          expanded={expandedSections.foundation}
+          toggleExpanded={() => toggleSection("foundation")}
+          scrollToNext={() => magicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          selectedGenres={selectedGenres}
+          setSelectedGenres={setSelectedGenres}
+          selectedSubGenres={selectedSubGenres}
+          setSelectedSubGenres={setSelectedSubGenres}
+          selectedThemes={selectedThemes}
+          setSelectedThemes={setSelectedThemes}
+          setting={setting}
+          setSetting={setSetting}
+          tone={tone}
+          setTone={setTone}
+          selectedPOV={selectedPOV}
+          setSelectedPOV={setSelectedPOV}
+          storyLength={storyLength}
+          setStoryLength={setStoryLength}
+          userAge={userProfile?.age ?? null}
+        />
         <ProtagonistSection
           ref={protagonistRef}
           expanded={expandedSections.protagonist}
@@ -547,29 +501,6 @@ export default function StartStory() {
           filledCount={filledProtagonistFields}
           totalFields={totalProtagonistFields}
         />
-
-        <FoundationSection
-          ref={foundationRef}
-          expanded={expandedSections.foundation}
-          toggleExpanded={() => toggleSection("foundation")}
-          scrollToNext={() => magicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          selectedGenres={selectedGenres}
-          setSelectedGenres={setSelectedGenres}
-          selectedSubGenres={selectedSubGenres}
-          setSelectedSubGenres={setSelectedSubGenres}
-          selectedThemes={selectedThemes}
-          setSelectedThemes={setSelectedThemes}
-          setting={setting}
-          setSetting={setSetting}
-          tone={tone}
-          setTone={setTone}
-          selectedPOV={selectedPOV}
-          setSelectedPOV={setSelectedPOV}
-          storyLength={storyLength}
-          setStoryLength={setStoryLength}
-          userAge={userProfile?.age ?? null}
-        />
-
         <MagicSection
           ref={magicRef}
           expanded={expandedSections.magic}

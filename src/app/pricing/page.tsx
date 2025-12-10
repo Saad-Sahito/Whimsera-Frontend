@@ -225,7 +225,7 @@ export default function PricingPage() {
             </motion.div>
 
             {/* Features Comparison Section */}
-            <motion.div
+            {/* <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -260,7 +260,7 @@ export default function PricingPage() {
                         </motion.div>
                     ))}
                 </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* FAQ Section */}
             <motion.div
