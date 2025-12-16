@@ -1,15 +1,9 @@
 // components/StoryContent.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-    Maximize2,
-    Minimize2,
-    Moon,
-    Sun,
-    Type,
-} from "lucide-react";
+import { Maximize2, Minimize2, Moon, Sun, Type } from "lucide-react";
 
 interface StorySegment {
     type: "text" | "decision" | "save" | "status" | "saved" | "story_complete" | "act_transition" | "act_status" | "act_title" | "act_complete" | "error";
@@ -64,6 +58,8 @@ interface StoryContentProps {
     pollingAct: boolean;
     isStoryComplete: boolean;
     onRateStory?: (rating: number) => void;
+    initialRating: number;
+    onUpdateStoryViewState: (actId: number, chapterId: number, sceneId: number) => void;
 }
 
 function StreamingText({
@@ -92,13 +88,9 @@ function StreamingText({
             return;
         }
 
-        // Streaming mode: reveal full text instantly (or character-by-character if you want)
-        // But preserve paragraphs properly
         setDisplayedText(text);
         setIsComplete(true);
-        onStreamComplete?.();
 
-        // Optional: Add a tiny delay so animations feel natural
         const timer = setTimeout(() => {
             onStreamComplete?.();
         }, 100);
@@ -188,11 +180,21 @@ export default function StoryContent(props: StoryContentProps) {
         onSaveAndStop,
         pollingAct,
         isStoryComplete,
+        initialRating,
+        onUpdateStoryViewState,
     } = props;
+
     const [showRatingPrompt, setShowRatingPrompt] = useState(false);
     const [hasRated, setHasRated] = useState(false);
     const [hasDismissedRating, setHasDismissedRating] = useState(false);
     const [isActTransitionScreen, setIsActTransitionScreen] = useState(false);
+
+    // === NEW STATE & REFS FOR VIEW STATE ===
+    const [sceneRefs, setSceneRefs] = useState<React.RefObject<HTMLDivElement>[]>([]);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const currentVisibleSceneIdRef = useRef<number | null>(null);
+    // ======================================
+
 
     useEffect(() => {
         const hasTransition = storySegments.some(s => s.type === "act_transition");
@@ -200,37 +202,117 @@ export default function StoryContent(props: StoryContentProps) {
     }, [storySegments]);
 
     useEffect(() => {
-        if (isStoryComplete && !hasRated && !hasDismissedRating && !showRatingPrompt) {
+        // RATING LOGIC
+        const hasNotRated = initialRating === 0;
+
+        if (isStoryComplete && hasNotRated && !hasRated && !hasDismissedRating && !showRatingPrompt) {
             setShowRatingPrompt(true);
         }
-    }, [isStoryComplete, hasRated, hasDismissedRating, showRatingPrompt]);
+    }, [isStoryComplete, initialRating, hasRated, hasDismissedRating, showRatingPrompt]);
+
+    // === NEW EFFECT: Manage Scene Refs ===
+    useEffect(() => {
+        const textSegmentsCount = storySegments.filter(s => s.type === 'text').length;
+        // Create or resize the refs array to match the number of text segments
+        setSceneRefs(refs =>
+            Array(textSegmentsCount).fill(null).map((_, i) => refs[i] || React.createRef())
+        );
+        // Reset the visible scene index when segments change (e.g. new chapter loaded)
+        currentVisibleSceneIdRef.current = null;
+
+    }, [storySegments]);
+    // ======================================
+
+    // === MODIFIED EFFECT: Intersection Observer & Periodic Update ===
+    useEffect(() => {
+        // Only run if the story is complete and we have segments to observe
+        if (!isStoryComplete) {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            return;
+        }
+
+        // Find the scrollable container
+        const storySegmentsContainer = document.querySelector('[class*="overflow-y-auto"]');
+        if (!storySegmentsContainer) {
+            console.warn("Story segments container not found");
+            return;
+        }
+
+        // --- Intersection Observer Logic ---
+        const observer = new IntersectionObserver(
+            (entries) => {
+                let topmostVisibleId: number | null = null;
+
+                // Find the segment closest to the top (smallest scene-id) that is intersecting
+                for (const entry of entries) {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0) {
+                        const id = parseInt(entry.target.getAttribute('data-scene-id') || '-1');
+                        if (id !== -1) {
+                            if (topmostVisibleId === null || id < topmostVisibleId) {
+                                topmostVisibleId = id;
+                            }
+                        }
+                    }
+                }
+
+                // Update the ref to the currently visible scene index (0-indexed)
+                if (topmostVisibleId !== null) {
+                    currentVisibleSceneIdRef.current = topmostVisibleId;
+                }
+            },
+            {
+                root: storySegmentsContainer,
+                // Detect elements when they're in the top 50% of the viewport
+                rootMargin: '0px 0px -50% 0px',
+                threshold: 0.01,
+            }
+        );
+
+        // Observe all segment refs
+        sceneRefs.forEach((ref) => {
+            if (ref.current) {
+                observer.observe(ref.current);
+            }
+        });
+
+        // --- Periodic Update Logic ---
+        const updateState = () => {
+            let currentSceneId = currentVisibleSceneIdRef.current;
+
+            // Fallback: if no intersection detected (user at bottom), use last scene
+            if (currentSceneId === null && sceneRefs.length > 0) {
+                currentSceneId = sceneRefs.length - 1;
+            }
+
+            if (currentSceneId !== null) {
+                const sceneIdToSend = currentSceneId + 1;
+                onUpdateStoryViewState(currentActId, currentChapter, sceneIdToSend);
+            }
+        };
+
+        // Start interval for periodic API calls (every 30 seconds)
+        // Note: We do NOT call updateState() immediately here, only on interval.
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(updateState, 30000);
+        
+        // Add this after setting the interval
+        setTimeout(updateState, 8000); // Give user time to read "The End"
+        return () => {
+            // Cleanup
+            observer.disconnect();
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+
+    }, [isStoryComplete, currentActId, currentChapter, onUpdateStoryViewState, sceneRefs]);
+    // ======================================
+
 
     const isShowingActCompleteScreen = pollingAct && storySegments.some(seg => seg.type === "act_complete");
 
-    const renderSegment = (segment: StorySegment, index: number) => {
-        const key = `${segment.id}-${index}`;
-        const isLastSegment = index === storySegments.length - 1;
-
+    // The renderSegment function is now split, with the 'text' case handled 
+    // directly in the map to manage the `textSegmentCounter` cleanly.
+    const renderNonTextSegment = (segment: StorySegment, key: string) => {
         switch (segment.type) {
-            case "text":
-                return (
-                    <motion.div
-                        key={key}
-                        className="mb-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <StreamingText
-                            text={segment.scene_text || ""}
-                            fontSize={fontSize}
-                            fontFamily={fontFamily}
-                            textColor={textColor}
-                            onStreamComplete={onStreamComplete}
-                        />
-                    </motion.div>
-                );
-
             case "decision":
                 return (
                     <motion.div
@@ -348,7 +430,7 @@ export default function StoryContent(props: StoryContentProps) {
                         actNumber={actNum}
                         totalActs={totalActs}
                         isDarkMode={isDarkMode}
-                        isActive={isLastSegment}
+                        isActive={true}
                     />
                 );
             }
@@ -376,11 +458,14 @@ export default function StoryContent(props: StoryContentProps) {
                         </p>
                     </motion.div>
                 );
-
             default:
                 return null;
         }
     };
+
+
+    // Reset the text segment counter before starting the map
+    let textSegmentCounter = -1;
 
     return (
         <div className="flex-1 min-w-0">
@@ -544,7 +629,40 @@ export default function StoryContent(props: StoryContentProps) {
                         </motion.div>
                     ) : storySegments.length > 0 ? (
                         <>
-                            {storySegments.map((segment, index) => renderSegment(segment, index))}
+                            {storySegments.map((segment, index) => {
+                                const key = `${segment.id}-${index}`;
+
+                                // === SCENE VIEW STATE LOGIC: Handle 'text' segments ===
+                                if (segment.type === 'text') {
+                                    textSegmentCounter++;
+                                    const ref = sceneRefs[textSegmentCounter];
+                                    const sceneId = textSegmentCounter; // 0-indexed scene ID
+
+                                    return (
+                                        <motion.div
+                                            key={key}
+                                            ref={ref}
+                                            data-scene-id={sceneId}
+                                            className="mb-6"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5 }}
+                                        >
+                                            <StreamingText
+                                                text={segment.scene_text || ""}
+                                                fontSize={fontSize}
+                                                fontFamily={fontFamily}
+                                                textColor={textColor}
+                                                onStreamComplete={onStreamComplete}
+                                            />
+                                        </motion.div>
+                                    );
+                                }
+                                // === END SCENE VIEW STATE LOGIC ===
+
+                                // Handle all other segment types
+                                return renderNonTextSegment(segment, key);
+                            })}
                             {isConnected && <LoadingSkeleton isDark={isDarkMode} />}
                             <div ref={storyEndRef} />
                         </>
@@ -567,8 +685,12 @@ export default function StoryContent(props: StoryContentProps) {
                             if (props.onRateStory) {
                                 props.onRateStory(rating);
                             }
+                            setShowRatingPrompt(false);
                         }}
-                        onDismiss={() => setHasDismissedRating(true)}
+                        onDismiss={() => {
+                            setHasDismissedRating(true);
+                            setShowRatingPrompt(false);
+                        }}
                         onClose={() => setShowRatingPrompt(false)}
                         isDarkMode={isDarkMode}
                     />
@@ -593,57 +715,79 @@ export default function StoryContent(props: StoryContentProps) {
       `}</style>
         </div>
     );
-    // === Add this new component inside StoryContent.tsx (near the top or bottom) ===
-    function StoryRatingPrompt({
-        onRate,
-        onDismiss,
-        onClose,
-        isDarkMode,
-    }: {
-        onRate: (rating: number) => void;
-        onDismiss: () => void;
-        onClose: () => void;
-        isDarkMode: boolean;
-    }) {
-        const [hovered, setHovered] = useState(0);
-        const [selected, setSelected] = useState(0);
+}
 
-        const stars = [1, 2, 3, 4, 5];
+function StoryRatingPrompt({
+    onRate,
+    onDismiss,
+    onClose,
+    isDarkMode,
+}: {
+    onRate: (rating: number) => void;
+    onDismiss: () => void;
+    onClose: () => void;
+    isDarkMode: boolean;
+}) {
+    const [hovered, setHovered] = useState(0);
+    const [selected, setSelected] = useState(0);
 
-        const handleClick = (rating: number) => {
-            setSelected(rating);
-            onRate(rating);
-        };
+    const stars = [1, 2, 3, 4, 5];
 
-        return (
+    const handleClick = (rating: number) => {
+        setSelected(rating);
+        onRate(rating);
+    };
+
+    const handleClose = () => {
+        if (selected === 0) {
+            onDismiss();
+        }
+        onClose();
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+            onClick={handleClose}
+        >
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                onClick={() => {
-                    onDismiss();
-                    onClose();
-                }}
+                className={`relative max-w-md w-full mx-4 p-8 rounded-3xl shadow-2xl border ${isDarkMode
+                    ? "bg-gray-800/95 border-gray-700"
+                    : "bg-white/95 border-gray-200"
+                    }`}
+                onClick={(e) => e.stopPropagation()}
             >
-                <motion.div
-                    className={`relative max-w-md w-full mx-4 p-8 rounded-2xl shadow-2xl border ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                {/* Close button */}
+                <button
+                    onClick={handleClose}
+                    className={`absolute top-4 right-4 text-2xl font-light rounded-full w-10 h-10 flex items-center justify-center transition-all ${isDarkMode
+                        ? "hover:bg-gray-700 text-gray-400"
+                        : "hover:bg-gray-200 text-gray-500"
                         }`}
-                    onClick={(e) => e.stopPropagation()}
                 >
-                    {/* Decorative glow */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur-lg opacity-40" />
+                    ×
+                </button>
 
-                    <div className="relative">
-                        <h3 className="text-2xl font-bold text-center mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                            Story Complete!
-                        </h3>
-                        <p className="text-center text-gray-600 mb-8">
-                            How would you rate this story?
-                        </p>
+                <div className="text-center">
+                    <h3 className={`text-2xl font-bold mb-3 ${isDarkMode ? "text-white" : "text-gray-900"
+                        }`}>
+                        How was your story?
+                    </h3>
+                    <p className={`text-sm mb-8 ${isDarkMode ? "text-gray-400" : "text-gray-600"
+                        }`}>
+                        {selected > 0
+                            ? "Thank you for your feedback!"
+                            : "Your rating helps us improve the magic ✨"}
+                    </p>
 
-                        <div className="flex justify-center gap-3 mb-8">
-                            {stars.map((star) => (
+                    {/* Star Rating */}
+                    <div className="flex justify-center gap-3 mb-10">
+                        {stars.map((star) => {
+                            const isFilled = star <= (hovered || selected);
+                            return (
                                 <motion.button
                                     key={star}
                                     whileHover={{ scale: 1.2 }}
@@ -651,143 +795,137 @@ export default function StoryContent(props: StoryContentProps) {
                                     onMouseEnter={() => setHovered(star)}
                                     onMouseLeave={() => setHovered(0)}
                                     onClick={() => handleClick(star)}
-                                    className="focus:outline-none"
+                                    className="focus:outline-none transition-all"
+                                    aria-label={`Rate ${star} stars`}
                                 >
                                     <svg
                                         width="48"
                                         height="48"
                                         viewBox="0 0 24 24"
-                                        fill={star <= (hovered || selected) ? "#f59e0b" : "#e5e7eb"}
-                                        stroke="#f59e0b"
+                                        fill={isFilled ? "#FBBF24" : "none"}
+                                        stroke={isFilled ? "#F59E0B" : (isDarkMode ? "#4B5563" : "#9CA3AF")}
                                         strokeWidth="2"
-                                        className="drop-shadow-md"
+                                        className="drop-shadow-lg"
                                     >
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
                                 </motion.button>
-                            ))}
-                        </div>
-
-                        <div className="text-center text-sm text-gray-500 mb-6">
-                            {selected === 0
-                                ? "Click a star to rate (optional)"
-                                : `You rated this story ${selected} star${selected > 1 ? "s" : ""} — Thank you!`}
-                        </div>
-
-                        <button
-                            onClick={() => {
-                                if (selected === 0) {
-                                    onDismiss();
-                                }
-                                onClose();
-                            }}
-                            className="w-full py-3 rounded-xl font-medium transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg"
-                        >
-                            {selected > 0 ? "Thanks for your rating!" : "No thanks, maybe later"}
-                        </button>
+                            );
+                        })}
                     </div>
-                </motion.div>
-            </motion.div>
-        );
-    }
-    function ActInterludeScreen({
-        actNumber,
-        totalActs,
-        isDarkMode,
-        isActive,
-    }: {
-        actNumber: number | string;
-        totalActs: number | string;
-        isDarkMode: boolean;
-        isActive: boolean;
-    }) {
-        const messages = [
-            "The stagehands of fate are moving scenery behind the curtain…",
-            "Ink and starlight are being carefully mixed for the next scene…",
-            "Ancient tomes are being consulted. The muses demand perfection…",
-            "A thousand possibilities are being woven into one golden thread…",
-            "The gods of narrative are rolling their dice once-in-a-millennium dice…",
-            "Memories of the last act are crystallising into legend…",
-            "Somewhere, a quill scratches furiously. The next line is almost ready…",
-            "Even the silence between acts has its own secret melody…",
-        ];
 
-        const [messageIndex, setMessageIndex] = useState(0);
-        const [progress, setProgress] = useState(0);
-
-        useEffect(() => {
-            const messageInterval = setInterval(() => {
-                setMessageIndex(i => (i + 1) % messages.length);
-            }, 8500);
-            return () => clearInterval(messageInterval);
-        }, []);
-
-        useEffect(() => {
-            if (!isActive) {
-                setProgress(100);
-                return;
-            }
-
-            setProgress(0);
-            const duration = 120000; // 2 minutes in ms
-            const increment = 100 / (duration / 1000); // per second
-            const interval = setInterval(() => {
-                setProgress(prev => {
-                    if (prev >= 100) {
-                        clearInterval(interval);
-                        return 100;
-                    }
-                    return prev + increment;
-                });
-            }, 1000);
-
-            return () => clearInterval(interval);
-        }, [isActive]);
-
-        return (
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className={`mb-6 p-6 rounded-xl shadow-lg text-center ${isDarkMode
-                    ? "bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/50"
-                    : "bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200"
-                    }`}
-            >
-                <p className={`text-lg font-semibold mb-2 ${isDarkMode ? "text-purple-200" : "text-purple-900"}`}>
-                    Act {actNumber} of {totalActs}
-                </p>
-
-                <div className="min-h-[2rem] flex items-center justify-center mb-4">
-                    <AnimatePresence mode="wait">
-                        <motion.p
-                            key={messageIndex}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.8 }}
-                            className={`text-sm italic ${isDarkMode ? "text-indigo-300" : "text-indigo-700"}`}
-                        >
-                            {messages[messageIndex]}
-                        </motion.p>
-                    </AnimatePresence>
+                    {/* Final Button */}
+                    <button
+                        onClick={handleClose}
+                        className={`w-full py-4 rounded-2xl font-semibold text-white transition-all shadow-xl ${selected > 0
+                            ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                            : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            }`}
+                    >
+                        {selected > 0 ? "Thank you!" : "No thanks, maybe later"}
+                    </button>
                 </div>
-
-                {isActive && (
-                    <div className="max-w-md mx-auto">
-                        <div className="flex justify-between text-xs mb-1 opacity-70">
-                            <span>Preparing the next act</span>
-                            <span>{progress.toFixed(1)}%</span>
-                        </div>
-                        <div className="h-1 rounded-full overflow-hidden bg-white/20">
-                            <motion.div
-                                className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
-                    </div>
-                )}
             </motion.div>
-        );
-    }
+        </motion.div>
+    );
+}
+function ActInterludeScreen({
+    actNumber,
+    totalActs,
+    isDarkMode,
+    isActive,
+}: {
+    actNumber: number | string;
+    totalActs: number | string;
+    isDarkMode: boolean;
+    isActive: boolean;
+}) {
+    const messages = [
+        "The stagehands of fate are moving scenery behind the curtain…",
+        "Ink and starlight are being carefully mixed for the next scene…",
+        "Ancient tomes are being consulted. The muses demand perfection…",
+        "A thousand possibilities are being woven into one golden thread…",
+        "The gods of narrative are rolling their dice once-in-a-millennium dice…",
+        "Memories of the last act are crystallising into legend…",
+        "Somewhere, a quill scratches furiously. The next line is almost ready…",
+        "Even the silence between acts has its own secret melody…",
+    ];
+
+    const [messageIndex, setMessageIndex] = useState(0);
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+        const messageInterval = setInterval(() => {
+            setMessageIndex(i => (i + 1) % messages.length);
+        }, 8500);
+        return () => clearInterval(messageInterval);
+    }, []);
+
+    useEffect(() => {
+        if (!isActive) {
+            setProgress(100);
+            return;
+        }
+
+        setProgress(0);
+        const duration = 120000;
+        const increment = 100 / (duration / 1000);
+        const interval = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    return 100;
+                }
+                return prev + increment;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isActive]);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className={`mb-6 p-6 rounded-xl shadow-lg text-center ${isDarkMode
+                ? "bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/50"
+                : "bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200"
+                }`}
+        >
+            <p className={`text-lg font-semibold mb-2 ${isDarkMode ? "text-purple-200" : "text-purple-900"}`}>
+                Act {actNumber} of {totalActs}
+            </p>
+
+            <div className="min-h-[2rem] flex items-center justify-center mb-4">
+                <AnimatePresence mode="wait">
+                    <motion.p
+                        key={messageIndex}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.8 }}
+                        className={`text-sm italic ${isDarkMode ? "text-indigo-300" : "text-indigo-700"}`}
+                    >
+                        {messages[messageIndex]}
+                    </motion.p>
+                </AnimatePresence>
+            </div>
+
+            {isActive && (
+                <div className="max-w-md mx-auto">
+                    <div className="flex justify-between text-xs mb-1 opacity-70">
+                        <span>Preparing the next act</span>
+                        <span>{progress.toFixed(1)}%</span>
+                    </div>
+                    <div className="h-1 rounded-full overflow-hidden bg-white/20">
+                        <motion.div
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                </div>
+            )}
+        </motion.div>
+    );
 }

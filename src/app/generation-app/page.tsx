@@ -77,6 +77,9 @@ interface StoryMetadata {
     blurb?: string | null;
     image_data?: string | null;
     public?: boolean;
+    rating?: number;
+    last_chapter_id?: number;
+    latest_chapter_id?: number;
     [key: string]: number | string | boolean | string[] | null | undefined;
 }
 
@@ -114,7 +117,7 @@ function GenerationAppContent() {
     const [totalChapters, setTotalChapters] = useState<number>(1);
     const [currentActId, setCurrentActId] = useState<number>(0);
     const [currentActTitle, setCurrentActTitle] = useState<string>("");
-    const [liveActTitle, setLiveActTitle] = useState<string>(""); // NEW: Real-time title from WS
+    const [liveActTitle, setLiveActTitle] = useState<string>("");
     const [continueSceneId, setContinueSceneId] = useState<number | null>(null);
     const [textColor, setTextColor] = useState<string>("#2D3436");
     const [storyMetadata, setStoryMetadata] = useState<StoryMetadata>({});
@@ -123,7 +126,6 @@ function GenerationAppContent() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isLoadingStoryBox, setIsLoadingStoryBox] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    // const [showSaveConfirmation, setShowSaveConfirmation] = useState<boolean>(false);
     const [showChapterComplete, setShowChapterComplete] = useState<boolean>(false);
     const [messageQueue, setMessageQueue] = useState<StorySegment[]>([]);
     const [isStreaming, setIsStreaming] = useState<boolean>(false);
@@ -133,6 +135,7 @@ function GenerationAppContent() {
     const [pollingAct, setPollingAct] = useState<boolean>(false);
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [newChapterAvailable, setNewChapterAvailable] = useState<boolean>(false);
+    const [initialRating, setInitialRating] = useState<number>(0);
 
     // === Persisted Settings ===
     const [fontFamily, setFontFamily] = usePersistedState<string>("whimsera-fontFamily", "'Inter', sans-serif");
@@ -237,12 +240,62 @@ function GenerationAppContent() {
                 },
                 body: JSON.stringify({ rating }),
             });
-            // Optionally show confirmation
             setStatusMessage("Thank you for rating!");
         } catch (err) {
             console.error("Failed to submit rating:", err);
         }
     };
+
+    // === NEW: API call to update the story view state ===
+    const updateStoryViewState = async (actId: number, chapterId: number, sceneId: number) => {
+        if (!userId || !storyId || !accessToken) {
+            console.warn("Missing required params for view state update:", { userId, storyId, accessToken });
+            return;
+        }
+        console.log("Calling View State API Call")
+        try {
+            const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+            if (!backendUrl) {
+                console.warn("Backend URL not configured");
+                return;
+            }
+
+            const url = `${backendUrl}/stories/update-state/${userId}/${storyId}`;
+
+            console.log("Sending view state update:", {
+                url,
+                act_id: actId,
+                chapter_id: chapterId,
+                scene_id: sceneId
+            });
+            console.log("Updating State")
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    act_id: actId,
+                    chapter_id: chapterId,
+                    scene_id: sceneId,
+                }),
+            });
+
+            if (!response.ok) {
+                console.warn("View state update failed:", response.status, response.statusText);
+                return;
+            }
+
+            const data = await response.json();
+            console.log("View state updated successfully:", data);
+
+        } catch (err) {
+            console.error("Failed to update story view state:", err);
+        }
+    };
+    // === END NEW API CALL ===
+
     // === Fetch Story Box Content ===
     const fetchStoryBoxContent = async (chapterNum: number) => {
         setIsLoadingStoryBox(true);
@@ -356,7 +409,6 @@ function GenerationAppContent() {
 
             // 5. Error
             if (message.type === "error") {
-                // NEW: Special handling for monthly word limit
                 if (
                     message.message?.includes("monthly word count limit reached") ||
                     message.message?.includes("tier 'free'") ||
@@ -371,14 +423,10 @@ function GenerationAppContent() {
 
             // 6. Saved Confirmation
             if (message.type === "saved") {
-                // setShowSaveConfirmation(true);
-                // setTimeout(() => setShowSaveConfirmation(false), 3000);
-
-                // Check if user requested Save & Stop
                 if ((window as any)._pendingSaveAndStop) {
                     (window as any)._pendingSaveAndStop = false;
-                    disconnect(); // Immediately close connection after save
-                    return; // Prevent further processing
+                    disconnect();
+                    return;
                 }
                 return;
             }
@@ -404,7 +452,6 @@ function GenerationAppContent() {
         },
         onConnect: () => setError(null),
         onError: (err) => {
-            // Also catch it here if the error comes from the WebSocket connection itself
             const errMsg = err?.toString() || "";
             if (errMsg.includes("380") || errMsg.includes("monthly word count limit")) {
                 setError("Your monthly word count has exceeded.");
@@ -451,19 +498,15 @@ function GenerationAppContent() {
                     body: JSON.stringify({ user_id: userId, story_type: storyType }),
                 });
 
-                // THIS IS THE KEY PART
                 if (!continueResponse.ok) {
-                    // Try to parse JSON error body
                     let errorDetail = "Failed to continue story";
                     try {
                         const errorBody = await continueResponse.json();
                         errorDetail = errorBody.detail || errorBody.message || errorDetail;
                     } catch {
-                        // If not JSON, use status text
                         errorDetail = continueResponse.statusText;
                     }
 
-                    // Detect your exact 380 case
                     if (
                         continueResponse.status === 380 &&
                         (errorDetail.includes("monthly word count limit reached") ||
@@ -472,20 +515,16 @@ function GenerationAppContent() {
                     ) {
                         setError("Your monthly word count has exceeded.");
                         setIsLoading(false);
-                        return; // Stop everything
+                        return;
                     }
-
-                    // Any other non-200 → generic error
                     throw new Error(errorDetail);
                 }
-                // End of key part
 
                 const continueData = await continueResponse.json();
                 if (continueData.status !== "success") {
                     throw new Error(continueData.message || "Failed to initialize story");
                 }
 
-                // Rest of your success flow (progress fetch, metadata
                 const progressResponse = await fetch(
                     `${backendUrl}/stories/progress/${userId}/${storyId}?story_type=${storyType}`,
                     { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -496,15 +535,23 @@ function GenerationAppContent() {
                     throw new Error("Failed to fetch story metadata");
                 }
 
-                const latestChapter = progressData.data?.latest_chapter_id || 1;
+                // === MODIFIED: Use last_chapter_id for total, latest_chapter_id for view state ===
+                const lastChapter = progressData.data?.last_chapter_id || 1;
+                const viewStateChapter = progressData.data?.latest_chapter_id || lastChapter; // Fallback if missing
+
+                const progressRating = progressData.data?.rating || 0;
                 setStoryMetadata({ ...progressData.data });
-                setCurrentChapter(latestChapter);
-                setTotalChapters(latestChapter);
+
+                // Set sidebar count based on last_chapter_id
+                setTotalChapters(lastChapter);
+                // Set initial view state based on latest_chapter_id
+                setCurrentChapter(viewStateChapter);
+
                 setStoryWordCount(progressData.data?.story_word_count || 0);
                 setIsStoryComplete(progressData.data?.complete || false);
+                setInitialRating(progressRating);
 
             } catch (err: any) {
-                // Fallback — if somehow 380 slipped through
                 if (err.message?.includes("380") || err.message?.toLowerCase().includes("word count")) {
                     setError("Your monthly word count has exceeded.");
                 } else {
@@ -537,8 +584,6 @@ function GenerationAppContent() {
     const handleSaveStory = async () => {
         await continueChapter();
         setStorySegments((prev) => prev.filter((seg) => seg.type !== "save"));
-        // setShowSaveConfirmation(true);
-        // setTimeout(() => setShowSaveConfirmation(false), 3000);
 
         if (currentChapter === totalChapters && currentActId === 0) {
             startPollingAct();
@@ -568,14 +613,8 @@ function GenerationAppContent() {
     };
 
     const handleSaveAndStop = async () => {
-        // Optimistically remove the save prompt UI
         setStorySegments((prev) => prev.filter((seg) => seg.type !== "save"));
-
-        // Send save request
         await continueChapter();
-
-        // We'll disconnect as soon as we get the "saved" confirmation
-        // So we set a one-time flag that the WebSocket handler will check
         (window as any)._pendingSaveAndStop = true;
     };
 
@@ -603,7 +642,7 @@ function GenerationAppContent() {
             <TopLoader isLoading={showLoader} />
             <Navbar isDarkMode={isDarkMode} />
 
-            {/* Enhanced Error Toast */}
+            {/* Error and Confirmation Components... */}
             {error && (
                 <div
                     className={`fixed top-20 right-4 z-50 max-w-md rounded-xl shadow-2xl px-6 py-4 text-white font-medium animate-slide-in ${isWordLimitError
@@ -629,13 +668,6 @@ function GenerationAppContent() {
                     )}
                 </div>
             )}
-            {/* {showSaveConfirmation && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-                    <div className="bg-gradient-to-r from-teal-500 to-green-500 text-white px-10 py-5 rounded-2xl shadow-2xl text-xl font-bold animate-bounce-in pointer-events-auto">
-                        Story Saved
-                    </div>
-                </div>
-            )} */}
             {showChapterComplete && (
                 <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
                     <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-10 py-5 rounded-2xl shadow-2xl text-2xl font-bold animate-fade-in-out pointer-events-auto">
@@ -697,6 +729,10 @@ function GenerationAppContent() {
                     pollingAct={pollingAct}
                     isStoryComplete={isStoryComplete}
                     onRateStory={handleStoryRating}
+                    initialRating={initialRating}
+                    // === NEW PROP PASSING ===
+                    onUpdateStoryViewState={updateStoryViewState}
+                // =========================
                 />
             </main>
 
