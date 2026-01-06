@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  /* Core Colors */
+  --color-slate-blue: #6c5ce7;
+  --color-keppel: #00bfa6;
+  --color-light-red: #ff7675;
+
+  /* Accent Colors */
+  --color-sunglow: #ffd166;
+  --color-maya-blue: #74c0fc;
+
+  /* Neutrals */
+  --color-sea-shell: #fff8f1;
+  --color-gunmetal: #2d3436;
+  --color-platinum: #e5e5e5;
+
+  /* Fonts */
+  --font-annie: "Annie Use Your Telescope", cursive;
+}
+
+/* Base styles to ensure the background covers the whole page */
+@layer base {
+  body {
+    @apply bg-sea-shell text-gunmetal;
+    margin: 0;
+    padding: 0;
+  }
+}
