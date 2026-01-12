@@ -1,0 +1,13 @@
+for main
+git add .
+git commit -m "some text"
+git push origin main
+
+
+for branches
+git checkout -b writer-assistant-frontend   # created the branch
+
+# make changes
+git add .
+git commit -m "Fix session bug"
+git push -u origin writer-assistant-frontend
